@@ -7,7 +7,7 @@ addition=""
 #--------------------- Conv12 Extension ---------------------------------
 
 
-if false; then
+if true; then
     addition="12_"
 
     PREFIX="12_Insertion"
@@ -32,7 +32,7 @@ fi
 
 # --------------- Resnet Extension --------------------------------------
 
-if true; then
+if false; then
     addition="res_"
 
     PREFIX="Resnet"
