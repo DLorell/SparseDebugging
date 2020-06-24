@@ -1,0 +1,38 @@
+Traceback (most recent call last):
+  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/runpy.py", line 193, in _run_module_as_main
+    "__main__", mod_spec)
+  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/runpy.py", line 85, in _run_code
+    exec(code, run_globals)
+  File "/home-nfs/lorell/tmpgit/SparseDebugging/src/__main__.py", line 33, in <module>
+    main()
+  File "/home-nfs/lorell/tmpgit/SparseDebugging/src/__main__.py", line 30, in main
+    run(depth=args.depth, augmentation=args.aug, mparams=args.mparams, position=args.position, fsmult=args.fsmult, kdiv=args.kdiv, auxweight=args.auxweight, loadmodel=args.load, usecase=args.usecase, prefix=args.prefix)
+  File "/home-nfs/lorell/tmpgit/SparseDebugging/src/app.py", line 84, in run
+    TAG += "_noAug"
+  File "/home-nfs/lorell/tmpgit/SparseDebugging/src/app.py", line 165, in train_epochs
+    
+  File "/home-nfs/lorell/tmpgit/SparseDebugging/src/app.py", line 315, in evaluate
+    
+  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/modules/module.py", line 532, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/home-nfs/lorell/tmpgit/SparseDebugging/src/resnets.py", line 238, in forward
+    output, aux_losses_2 = self.conv2_x(output)
+  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/modules/module.py", line 532, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/home-nfs/lorell/tmpgit/SparseDebugging/src/resnets.py", line 274, in forward
+    x, auxs = module(x)
+  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/modules/module.py", line 532, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/home-nfs/lorell/tmpgit/SparseDebugging/src/resnets.py", line 189, in forward
+    out, aux_loss_1 = self.residual_function_1(out)
+  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/modules/module.py", line 532, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/home-nfs/lorell/tmpgit/SparseDebugging/src/models.py", line 445, in forward
+    features = self.classify_bnorm(x)
+  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/modules/module.py", line 532, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/modules/loss.py", line 431, in forward
+    return F.mse_loss(input, target, reduction=self.reduction)
+  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/functional.py", line 2211, in mse_loss
+    ret = (input - target) ** 2
+RuntimeError: CUDA out of memory. Tried to allocate 144.00 MiB (GPU 0; 10.76 GiB total capacity; 9.02 GiB already allocated; 99.06 MiB free; 9.88 GiB reserved in total by PyTorch)
