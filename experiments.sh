@@ -15,7 +15,7 @@ if true; then
     DEPTH=6
     AUG="true"
     MPARAMS="true"
-    NUMITER=4
+    NUMITER=6
     CONTINUE="continue"
 
     FSMULT=4

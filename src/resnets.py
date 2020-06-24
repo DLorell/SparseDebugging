@@ -199,7 +199,7 @@ class ResNet_Sparse(nn.Module):
 
         self.in_channels = 64//2
 
-        self.conv1 = SparseCodingLayer_AfterSparse(in_dim=3, out_dim=64, stride=1, padding=1, filterset_size=round(int(64*filter_set_mult)), k=round(int(64/k_div)))
+        self.conv1 = SparseCodingLayer_AfterSparse(in_dim=3, out_dim=64//2, stride=1, padding=1, filterset_size=round(int(64*filter_set_mult)), k=round(int(64/k_div)))
         #we use a different inputsize than the original paper
         #so conv2_x's stride is 1
         self.conv2_x = self._make_layer(filter_set_mult, k_div, block, 64//2, num_block[0], 1)
