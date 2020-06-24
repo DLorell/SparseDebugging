@@ -241,7 +241,7 @@ class SparseCodingLayer_First(nn.Module):
         bleed = (self.kernel_size - 1) // 2
         out = torch.zeros_like(target)
         if self.padding > 0:
-            padded = torch.zeros((x.shape[0], x.shape[1], x.shape[2]+self.padding, x.shape[3]+self.padding))
+            padded = torch.zeros((x.shape[0], x.shape[1], x.shape[2]+(2*self.padding), x.shape[3]+(2*self.padding)))
             padded[:, :, self.padding:-self.padding, self.padding:-self.padding] = x
             x = padded
         for h in range(bleed, x.shape[-2] - bleed, self.stride):
@@ -302,13 +302,13 @@ class SparseCodingLayer_AfterConv(nn.Module):
         bleed = (self.kernel_size - 1) // 2
         out = torch.zeros_like(target)
         if self.padding > 0:
-            padded = torch.zeros((x.shape[0], x.shape[1], x.shape[2]+self.padding, x.shape[3]+self.padding))
+            padded = torch.zeros((x.shape[0], x.shape[1], x.shape[2]+(2*self.padding), x.shape[3]+(2*self.padding)))
             padded[:, :, self.padding:-self.padding, self.padding:-self.padding] = x
             x = padded
-        for h in range(bleed, x.shape[-2] - bleed, self.stride):
-            for w in range(bleed, x.shape[-1] - bleed, self.stride):
+        for i, h in enumerate(range(bleed, x.shape[-2] - bleed, self.stride)):
+            for j, w in enumerate(range(bleed, x.shape[-1] - bleed, self.stride)):
                 patch = x[:, :, h-bleed:h+bleed+1, w-bleed:w+bleed+1].contiguous().view(x.shape[0], -1)
-                out[:, :, h-bleed, w-bleed] = patch
+                out[:, :, i, j] = patch
         return out
 
 class SparseCodingLayer_AfterSparse(SparseCodingLayer_AfterConv):
@@ -1206,5 +1206,4 @@ class Conv6_Sparse012345_ReLU(Conv6):
 
         _, preds = logits.max(dim=1)
         return logits, preds, aux_loss
-
 
