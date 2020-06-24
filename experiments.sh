@@ -3,6 +3,38 @@
 addition=""
 
 
+
+
+# --------------- Resnet Extension --------------------------------------
+
+if true; then
+    addition="res_"
+
+    PREFIX="Resnet"
+
+    DEPTH=6
+    AUG="true"
+    MPARAMS="true"
+    NUMITER=4
+    CONTINUE="continue"
+
+    FSMULT=4
+    AUXWEIGHT=0.7
+
+    for KDIV in 1 2 4; do
+        POSITION="Resnet_Sparse"
+        #for POSITION in "First" "01" "012" "0123" "01234" "012345"; do
+            for USECASE in "supervise" "random" "pretrain" "supervise" "regularize"; do
+                TAG="${addition}Use:${USECASE}_Aux:${AUXWEIGHT}_FS:${FSMULT}_KD:${KDIV}_Pos:${POSITION}_Conv6_Sparse";
+                ./submission_script.sh mmaire-gpu "${TAG}Series" "" "log/${TAG}_std.out" "log/${TAG}_std.err" 1 ${NUMITER} "${CONTINUE}" ${DEPTH} "${AUG}" "${MPARAMS}" "${POSITION}" ${FSMULT} ${KDIV} "${AUXWEIGHT}" "${USECASE}" "${PREFIX}";
+            done
+        #done
+    done
+fi
+
+
+
+
 #  --------------- Primary / Aux loss weighting search ------------------
 
 if false; then
@@ -30,7 +62,7 @@ fi
 
 # --------------- Sparse Layer Insertion -----------------
 
-if true; then
+if false; then
     addition="premp"
 
     PREFIX="Insertion"

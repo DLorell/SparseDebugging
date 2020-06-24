@@ -197,17 +197,17 @@ class ResNet_Sparse(nn.Module):
         super().__init__()
         self.usecase = usecase
 
-        self.in_channels = 64
+        self.in_channels = 64//2
 
         self.conv1 = SparseCodingLayer_AfterSparse(in_dim=3, out_dim=64, stride=1, padding=1, filterset_size=round(int(64*filter_set_mult)), k=round(int(64/k_div)))
         #we use a different inputsize than the original paper
         #so conv2_x's stride is 1
-        self.conv2_x = self._make_layer(filter_set_mult, k_div, block, 64, num_block[0], 1)
-        self.conv3_x = self._make_layer(filter_set_mult, k_div, block, 128, num_block[1], 2)
-        self.conv4_x = self._make_layer(filter_set_mult, k_div, block, 256, num_block[2], 2)
-        self.conv5_x = self._make_layer(filter_set_mult, k_div, block, 512, num_block[3], 2)
+        self.conv2_x = self._make_layer(filter_set_mult, k_div, block, 64//2, num_block[0], 1)
+        self.conv3_x = self._make_layer(filter_set_mult, k_div, block, 128//2, num_block[1], 2)
+        self.conv4_x = self._make_layer(filter_set_mult, k_div, block, 256//2, num_block[2], 2)
+        self.conv5_x = self._make_layer(filter_set_mult, k_div, block, 512//2, num_block[3], 2)
         self.avg_pool = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc = nn.Linear(512 * block.expansion, num_classes)
+        self.fc = nn.Linear(512//2 * block.expansion, num_classes)
 
     def _make_layer(self, filter_set_mult, k_div, block, out_channels, num_blocks, stride):
         """make resnet layers(by layer i didnt mean this 'layer' was the 
