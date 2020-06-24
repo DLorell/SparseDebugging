@@ -38,32 +38,43 @@ def run(depth, augmentation, mparams, position, fsmult, kdiv, auxweight, loadmod
     else:
         MODELARGS = [fsmult, kdiv] + MODELARGS
         if depth == 12:
-            raise Exception("12 Deep network with sparsity not implemented yet.")
-
-        if position == "First":
-            MODELTYPE = Conv6_SparseFirst
-        elif position == "Middle":
-            MODELTYPE = Conv6_SparseMiddle
-        elif position == "Last":
-            MODELTYPE = Conv6_SparseLast
-        elif position == "01":
-            MODELTYPE = models.Conv6_Sparse01
-        elif position == "012":
-            MODELTYPE = models.Conv6_Sparse012
-        elif position == "0123":
-            MODELTYPE = models.Conv6_Sparse0123
-        elif position == "01234":
-            MODELTYPE = models.Conv6_Sparse01234
-        elif position == "012345":
-            MODELTYPE = models.Conv6_Sparse012345
-        elif position == "012345_ReLU":
-            MODELTYPE = models.Conv6_Sparse012345_ReLU
-        elif position == "Resnet":
-            MODELTYPE = resnet34
-        elif position == "Resnet_Sparse":
-            MODELTYPE = resnet34_sparse
+            if position == "0":
+                MODELTYPE = models.Conv12_Sparse0
+            elif position == "01":
+                MODELTYPE = models.Conv12_Sparse01
+            elif position == "012":
+                MODELTYPE = models.Conv12_Sparse012
+            elif position == "0123":
+                MODELTYPE = models.Conv12_Sparse0123
+            elif position == "01234":
+                MODELTYPE = models.Conv12_Sparse01234
+            elif position == "012345":
+                MODELTYPE = models.Conv12_Sparse012345
         else:
-            raise Exception("Unknown position.")
+            if position == "First":
+                MODELTYPE = Conv6_SparseFirst
+            elif position == "Middle":
+                MODELTYPE = Conv6_SparseMiddle
+            elif position == "Last":
+                MODELTYPE = Conv6_SparseLast
+            elif position == "01":
+                MODELTYPE = models.Conv6_Sparse01
+            elif position == "012":
+                MODELTYPE = models.Conv6_Sparse012
+            elif position == "0123":
+                MODELTYPE = models.Conv6_Sparse0123
+            elif position == "01234":
+                MODELTYPE = models.Conv6_Sparse01234
+            elif position == "012345":
+                MODELTYPE = models.Conv6_Sparse012345
+            elif position == "012345_ReLU":
+                MODELTYPE = models.Conv6_Sparse012345_ReLU
+            elif position == "Resnet":
+                MODELTYPE = resnet34
+            elif position == "Resnet_Sparse":
+                MODELTYPE = resnet34_sparse
+            else:
+                raise Exception("Unknown position.")
             
         TAG += "_Sparse"+position + "_[FS:{}, KD:{}, AuxWgt:{}]_UseCase:{}".format(fsmult, kdiv, auxweight, usecase)
 
@@ -74,8 +85,6 @@ def run(depth, augmentation, mparams, position, fsmult, kdiv, auxweight, loadmod
 
     trainloader, testloader = get_dataloaders(augmentation, BATCH)
     model = MODELTYPE(*MODELARGS).to(DEVICE)
-    for p in model.parameters():
-        p.to(DEVICE)
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=0.1, momentum=0.9, nesterov=NESTEROV, weight_decay=DECAY)
 

@@ -22,69 +22,69 @@ class Conv12(nn.Module):
         self.usecase = usecase
 
         self.layer0_0 = nn.Sequential(
-            nn.Conv2d(3, 16, kernel_size=3, stride=1, padding=0))
+            nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=0))
         self.pad0 = nn.ReflectionPad2d(1)
         self.layer0_1 = nn.Sequential(
-            nn.BatchNorm2d(16),
+            nn.BatchNorm2d(64),
             nn.ReLU(),
-            nn.Conv2d(16, 64, kernel_size=3, stride=1, padding=0))
+            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=0))
 
 
         self.layer1_0 = nn.Sequential(
             nn.BatchNorm2d(64),
             nn.ReLU(),
-            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=0))
+            nn.Conv2d(64, 96, kernel_size=3, stride=1, padding=0))
         self.pad1 = nn.ReflectionPad2d(1)
         self.layer1_1 = nn.Sequential(
-            nn.BatchNorm2d(64),
+            nn.BatchNorm2d(96),
             nn.ReLU(),
-            nn.Conv2d(64, 96, kernel_size=3, stride=1, padding=0),
+            nn.Conv2d(96, 96, kernel_size=3, stride=1, padding=0),
             nn.MaxPool2d(2))
 
 
         self.layer2_0 = nn.Sequential(
             nn.BatchNorm2d(96),
             nn.ReLU(),
-            nn.Conv2d(96, 48, kernel_size=3, stride=1, padding=0))
+            nn.Conv2d(96, 128, kernel_size=3, stride=1, padding=0))
         self.pad2 = nn.ReflectionPad2d(1)
         self.layer2_1 = nn.Sequential(
-            nn.BatchNorm2d(48),
+            nn.BatchNorm2d(128),
             nn.ReLU(),
-            nn.Conv2d(48, 128, kernel_size=3, stride=1, padding=0))
+            nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=0))
 
 
         self.layer3_0 = nn.Sequential(
             nn.BatchNorm2d(128),
             nn.ReLU(),
-            nn.Conv2d(128, 64, kernel_size=3, stride=1, padding=0))
+            nn.Conv2d(128, 160, kernel_size=3, stride=1, padding=0))
         self.pad3 = nn.ReflectionPad2d(1)
         self.layer3_1 = nn.Sequential(
-            nn.BatchNorm2d(64),
+            nn.BatchNorm2d(160),
             nn.ReLU(),
-            nn.Conv2d(64, 160, kernel_size=3, stride=1, padding=0))
+            nn.Conv2d(160, 160, kernel_size=3, stride=1, padding=0))
 
 
         self.layer4_0 = nn.Sequential(
             nn.BatchNorm2d(160),
             nn.ReLU(),
-            nn.Conv2d(160, 160, kernel_size=3, stride=1, padding=0))
+            nn.Conv2d(160, 192, kernel_size=3, stride=1, padding=0))
         self.pad4 = nn.ReflectionPad2d(1)
         self.layer4_1 = nn.Sequential(
-            nn.BatchNorm2d(160),
+            nn.BatchNorm2d(192),
             nn.ReLU(),
-            nn.Conv2d(160, 192, kernel_size=3, stride=1, padding=0),
+            nn.Conv2d(192, 192, kernel_size=3, stride=1, padding=0),
             nn.MaxPool2d(2))
         
 
         self.layer5_0 = nn.Sequential(
             nn.BatchNorm2d(192),
             nn.ReLU(),
-            nn.Conv2d(192, 96, kernel_size=3, stride=1, padding=0))
+            nn.Conv2d(192, 256, kernel_size=3, stride=1, padding=0))
         self.pad5 = nn.ReflectionPad2d(1)
         self.layer5_1 = nn.Sequential(
-            nn.BatchNorm2d(96),
+            nn.BatchNorm2d(256),
             nn.ReLU(),
-            nn.Conv2d(96, 256, kernel_size=3, stride=1, padding=0))
+            nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=0))
 
         self.classify_bnorm = nn.BatchNorm2d(256)
         self.classify_fc = nn.Linear(256*2*2, 100)
@@ -176,116 +176,6 @@ class Conv6(nn.Module):
         x = self.layer3(x)
         x = self.layer4(x)
         features = self.layer5(x)
-
-        if self.usecase == "random" or self.usecase == "pretrain":
-            features = features.detach().clone()
-            features.requires_grad = True
-
-        features = self.classify_bnorm(features)
-        features = features.view(features.shape[0], -1)
-        logits = self.classify_fc(features)
-
-        _, preds = logits.max(dim=1)
-        return logits, preds, None
-
-class Conv12_Gradual(nn.Module):
-    def __init__(self, usecase):
-        super().__init__()
-
-        self.usecase = usecase
-
-        self.layer0_0 = nn.Sequential(
-            nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=0))
-        self.pad0 = nn.ReflectionPad2d(1)
-        self.layer0_1 = nn.Sequential(
-            nn.BatchNorm2d(64),
-            nn.ReLU(),
-            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=0))
-
-
-        self.layer1_0 = nn.Sequential(
-            nn.BatchNorm2d(64),
-            nn.ReLU(),
-            nn.Conv2d(64, 96, kernel_size=3, stride=1, padding=0))
-        self.pad1 = nn.ReflectionPad2d(1)
-        self.layer1_1 = nn.Sequential(
-            nn.BatchNorm2d(96),
-            nn.ReLU(),
-            nn.Conv2d(96, 96, kernel_size=3, stride=1, padding=0),
-            nn.MaxPool2d(2))
-
-
-        self.layer2_0 = nn.Sequential(
-            nn.BatchNorm2d(96),
-            nn.ReLU(),
-            nn.Conv2d(96, 96, kernel_size=3, stride=1, padding=0))
-        self.pad2 = nn.ReflectionPad2d(1)
-        self.layer2_1 = nn.Sequential(
-            nn.BatchNorm2d(96),
-            nn.ReLU(),
-            nn.Conv2d(96, 128, kernel_size=3, stride=1, padding=0))
-
-
-        self.layer3_0 = nn.Sequential(
-            nn.BatchNorm2d(128),
-            nn.ReLU(),
-            nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=0))
-        self.pad3 = nn.ReflectionPad2d(1)
-        self.layer3_1 = nn.Sequential(
-            nn.BatchNorm2d(128),
-            nn.ReLU(),
-            nn.Conv2d(128, 160, kernel_size=3, stride=1, padding=0))
-
-
-        self.layer4_0 = nn.Sequential(
-            nn.BatchNorm2d(160),
-            nn.ReLU(),
-            nn.Conv2d(160, 160, kernel_size=3, stride=1, padding=0))
-        self.pad4 = nn.ReflectionPad2d(1)
-        self.layer4_1 = nn.Sequential(
-            nn.BatchNorm2d(160),
-            nn.ReLU(),
-            nn.Conv2d(160, 192, kernel_size=3, stride=1, padding=0),
-            nn.MaxPool2d(2))
-        
-
-        self.layer5_0 = nn.Sequential(
-            nn.BatchNorm2d(192),
-            nn.ReLU(),
-            nn.Conv2d(192, 192, kernel_size=3, stride=1, padding=0))
-        self.pad5 = nn.ReflectionPad2d(1)
-        self.layer5_1 = nn.Sequential(
-            nn.BatchNorm2d(192),
-            nn.ReLU(),
-            nn.Conv2d(192, 256, kernel_size=3, stride=1, padding=0))
-
-        self.classify_bnorm = nn.BatchNorm2d(256)
-        self.classify_fc = nn.Linear(256*2*2, 100)
-
-    def forward(self, x):
-        x = self.layer0_0(x)
-        x = self.pad0(x)
-        x = self.layer0_1(x)
-
-        x = self.layer1_0(x)
-        x = self.pad1(x)
-        x = self.layer1_1(x)
-
-        x = self.layer2_0(x)
-        x = self.pad2(x)
-        x = self.layer2_1(x)
-
-        x = self.layer3_0(x)
-        x = self.pad3(x)
-        x = self.layer3_1(x)
-
-        x = self.layer4_0(x)
-        x = self.pad4(x)
-        x = self.layer4_1(x)
-
-        x = self.layer5_0(x)
-        x = self.pad5(x)
-        features = self.layer5_1(x)
 
         if self.usecase == "random" or self.usecase == "pretrain":
             features = features.detach().clone()
@@ -411,16 +301,14 @@ class SparseCodingLayer_AfterConv(nn.Module):
     def embiggen(self, x, target):
         bleed = (self.kernel_size - 1) // 2
         out = torch.zeros_like(target)
-
         if self.padding > 0:
-            padded = torch.zeros((x.shape[0], x.shape[1], x.shape[2]+(self.padding*2), x.shape[3]+(self.padding*2)))
+            padded = torch.zeros((x.shape[0], x.shape[1], x.shape[2]+self.padding, x.shape[3]+self.padding))
             padded[:, :, self.padding:-self.padding, self.padding:-self.padding] = x
             x = padded
-
         for h in range(bleed, x.shape[-2] - bleed, self.stride):
             for w in range(bleed, x.shape[-1] - bleed, self.stride):
                 patch = x[:, :, h-bleed:h+bleed+1, w-bleed:w+bleed+1].contiguous().view(x.shape[0], -1)
-                out[:, :, (h-bleed)//self.stride, (w-bleed)//self.stride] = patch
+                out[:, :, h-bleed, w-bleed] = patch
         return out
 
 class SparseCodingLayer_AfterSparse(SparseCodingLayer_AfterConv):
@@ -743,6 +631,415 @@ class Conv6_Sparse012345(Conv6):
         return logits, preds, aux_loss
 
 
+class Conv12_Sparse0(Conv12):
+    def __init__(self, filter_set_mult, k_div, usecase):
+        super().__init__(usecase)
+
+        self.layer0_0 = SparseCodingLayer_First(3, 64, filterset_size=round(int(64*filter_set_mult)), k=round(int(64/k_div)))
+        self.pad0 = nn.ReflectionPad2d(1)
+        self.layer0_1 = SparseCodingLayer_AfterSparse(64, 64, filterset_size=round(int(64*filter_set_mult)), k=round(int(64/k_div)))
+
+
+    def forward(self, x):
+        x, aux_loss_00 = self.layer0_0(x)
+        x = self.pad0(x)
+        x, aux_loss_01 = self.layer0_1(x)
+
+        x = self.layer1_0(x)
+        x = self.pad1(x)
+        x = self.layer1_1(x)
+
+        x = self.layer2_0(x)
+        x = self.pad2(x)
+        x = self.layer2_1(x)
+
+        x = self.layer3_0(x)
+        x = self.pad3(x)
+        x = self.layer3_1(x)
+
+        x = self.layer4_0(x)
+        x = self.pad4(x)
+        x = self.layer4_1(x)
+
+        x = self.layer5_0(x)
+        x = self.pad5(x)
+        features = self.layer5_1(x)
+
+        aux_loss = torch.mean(torch.stack((aux_loss_00,aux_loss_01)))
+
+        if self.usecase == "random" or self.usecase == "pretrain":
+            features = features.detach().clone()
+            features.requires_grad = True
+        if self.usecase == "random" or self.usecase == "supervise":
+            aux_loss = None
+
+        features = self.classify_bnorm(features)
+        features = features.view(features.shape[0], -1)
+        logits = self.classify_fc(features)
+
+        _, preds = logits.max(dim=1)
+        return logits, preds, aux_loss
+
+class Conv12_Sparse01(Conv12):
+    def __init__(self, filter_set_mult, k_div, usecase):
+        super().__init__(usecase)
+
+        self.layer0_0 = SparseCodingLayer_First(3, 64, filterset_size=round(int(64*filter_set_mult)), k=round(int(64/k_div)))
+        self.pad0 = nn.ReflectionPad2d(1)
+        self.layer0_1 = SparseCodingLayer_AfterSparse(64, 64, filterset_size=round(int(64*filter_set_mult)), k=round(int(64/k_div)))
+
+        self.layer1_0 = SparseCodingLayer_First(64, 96, filterset_size=round(int(96*filter_set_mult)), k=round(int(96/k_div)))
+        self.pad1 = nn.ReflectionPad2d(1)
+        self.layer1_1 = nn.Sequential(
+            SparseCodingLayer_AfterSparse(96, 96, filterset_size=round(int(96*filter_set_mult)), k=round(int(96/k_div))),
+            CustomMaxPool(2)
+        )
+
+    def forward(self, x):
+        x, aux_loss_00 = self.layer0_0(x)
+        x = self.pad0(x)
+        x, aux_loss_01 = self.layer0_1(x)
+
+        x, aux_loss_10 = self.layer1_0(x)
+        x = self.pad1(x)
+        x, aux_loss_11 = self.layer1_1(x)
+
+        x = self.layer2_0(x)
+        x = self.pad2(x)
+        x = self.layer2_1(x)
+
+        x = self.layer3_0(x)
+        x = self.pad3(x)
+        x = self.layer3_1(x)
+
+        x = self.layer4_0(x)
+        x = self.pad4(x)
+        x = self.layer4_1(x)
+
+        x = self.layer5_0(x)
+        x = self.pad5(x)
+        features = self.layer5_1(x)
+
+        aux_loss = torch.mean(torch.stack((aux_loss_00, aux_loss_01,
+                                           aux_loss_10, aux_loss_11)))
+
+        if self.usecase == "random" or self.usecase == "pretrain":
+            features = features.detach().clone()
+            features.requires_grad = True
+        if self.usecase == "random" or self.usecase == "supervise":
+            aux_loss = None
+
+        features = self.classify_bnorm(features)
+        features = features.view(features.shape[0], -1)
+        logits = self.classify_fc(features)
+
+        _, preds = logits.max(dim=1)
+        return logits, preds, aux_loss
+
+class Conv12_Sparse012(Conv12):
+    def __init__(self, filter_set_mult, k_div, usecase):
+        super().__init__(usecase)
+
+        self.layer0_0 = SparseCodingLayer_First(3, 64, filterset_size=round(int(64*filter_set_mult)), k=round(int(64/k_div)))
+        self.pad0 = nn.ReflectionPad2d(1)
+        self.layer0_1 = SparseCodingLayer_AfterSparse(64, 64, filterset_size=round(int(64*filter_set_mult)), k=round(int(64/k_div)))
+
+        self.layer1_0 = SparseCodingLayer_First(64, 96, filterset_size=round(int(96*filter_set_mult)), k=round(int(96/k_div)))
+        self.pad1 = nn.ReflectionPad2d(1)
+        self.layer1_1 = nn.Sequential(
+            SparseCodingLayer_AfterSparse(96, 96, filterset_size=round(int(96*filter_set_mult)), k=round(int(96/k_div))),
+            CustomMaxPool(2)
+        )
+
+        self.layer2_0 = SparseCodingLayer_First(96, 128, filterset_size=round(int(128*filter_set_mult)), k=round(int(128/k_div)))
+        self.pad2 = nn.ReflectionPad2d(1)
+        self.layer2_1 = SparseCodingLayer_AfterSparse(128, 128, filterset_size=round(int(128*filter_set_mult)), k=round(int(128/k_div)))
+
+
+    def forward(self, x):
+        x, aux_loss_00 = self.layer0_0(x)
+        x = self.pad0(x)
+        x, aux_loss_01 = self.layer0_1(x)
+
+        x, aux_loss_10 = self.layer1_0(x)
+        x = self.pad1(x)
+        x, aux_loss_11 = self.layer1_1(x)
+
+        x, aux_loss_20 = self.layer2_0(x)
+        x = self.pad2(x)
+        x, aux_loss_21 = self.layer2_1(x)
+
+        x = self.layer3_0(x)
+        x = self.pad3(x)
+        x = self.layer3_1(x)
+
+        x = self.layer4_0(x)
+        x = self.pad4(x)
+        x = self.layer4_1(x)
+
+        x = self.layer5_0(x)
+        x = self.pad5(x)
+        features = self.layer5_1(x)
+
+        aux_loss = torch.mean(torch.stack((aux_loss_00, aux_loss_01,
+                                           aux_loss_10, aux_loss_11,
+                                           aux_loss_20, aux_loss_21)))
+
+        if self.usecase == "random" or self.usecase == "pretrain":
+            features = features.detach().clone()
+            features.requires_grad = True
+        if self.usecase == "random" or self.usecase == "supervise":
+            aux_loss = None
+
+        features = self.classify_bnorm(features)
+        features = features.view(features.shape[0], -1)
+        logits = self.classify_fc(features)
+
+        _, preds = logits.max(dim=1)
+        return logits, preds, aux_loss
+
+class Conv12_Sparse0123(Conv12):
+    def __init__(self, filter_set_mult, k_div, usecase):
+        super().__init__(usecase)
+
+        self.layer0_0 = SparseCodingLayer_First(3, 64, filterset_size=round(int(64*filter_set_mult)), k=round(int(64/k_div)))
+        self.pad0 = nn.ReflectionPad2d(1)
+        self.layer0_1 = SparseCodingLayer_AfterSparse(64, 64, filterset_size=round(int(64*filter_set_mult)), k=round(int(64/k_div)))
+
+        self.layer1_0 = SparseCodingLayer_First(64, 96, filterset_size=round(int(96*filter_set_mult)), k=round(int(96/k_div)))
+        self.pad1 = nn.ReflectionPad2d(1)
+        self.layer1_1 = nn.Sequential(
+            SparseCodingLayer_AfterSparse(96, 96, filterset_size=round(int(96*filter_set_mult)), k=round(int(96/k_div))),
+            CustomMaxPool(2)
+        )
+
+        self.layer2_0 = SparseCodingLayer_First(96, 128, filterset_size=round(int(128*filter_set_mult)), k=round(int(128/k_div)))
+        self.pad2 = nn.ReflectionPad2d(1)
+        self.layer2_1 = SparseCodingLayer_AfterSparse(128, 128, filterset_size=round(int(128*filter_set_mult)), k=round(int(128/k_div)))
+
+
+        self.layer3_0 = SparseCodingLayer_First(128, 160, filterset_size=round(int(160*filter_set_mult)), k=round(int(160/k_div)))
+        self.pad3 = nn.ReflectionPad2d(1)
+        self.layer3_1 = SparseCodingLayer_AfterSparse(160, 160, filterset_size=round(int(160*filter_set_mult)), k=round(int(160/k_div)))
+
+
+    def forward(self, x):
+        x, aux_loss_00 = self.layer0_0(x)
+        x = self.pad0(x)
+        x, aux_loss_01 = self.layer0_1(x)
+
+        x, aux_loss_10 = self.layer1_0(x)
+        x = self.pad1(x)
+        x, aux_loss_11 = self.layer1_1(x)
+
+        x, aux_loss_20 = self.layer2_0(x)
+        x = self.pad2(x)
+        x, aux_loss_21 = self.layer2_1(x)
+
+        x, aux_loss_30 = self.layer3_0(x)
+        x = self.pad3(x)
+        x, aux_loss_31 = self.layer3_1(x)
+
+        x = self.layer4_0(x)
+        x = self.pad4(x)
+        x = self.layer4_1(x)
+
+        x = self.layer5_0(x)
+        x = self.pad5(x)
+        features = self.layer5_1(x)
+
+        aux_loss = torch.mean(torch.stack((aux_loss_00, aux_loss_01,
+                                           aux_loss_10, aux_loss_11,
+                                           aux_loss_20, aux_loss_21,
+                                           aux_loss_30, aux_loss_31)))
+
+        if self.usecase == "random" or self.usecase == "pretrain":
+            features = features.detach().clone()
+            features.requires_grad = True
+        if self.usecase == "random" or self.usecase == "supervise":
+            aux_loss = None
+
+        features = self.classify_bnorm(features)
+        features = features.view(features.shape[0], -1)
+        logits = self.classify_fc(features)
+
+        _, preds = logits.max(dim=1)
+        return logits, preds, aux_loss
+
+class Conv12_Sparse01234(Conv12):
+    def __init__(self, filter_set_mult, k_div, usecase):
+        super().__init__(usecase)
+
+        self.layer0_0 = SparseCodingLayer_First(3, 64, filterset_size=round(int(64*filter_set_mult)), k=round(int(64/k_div)))
+        self.pad0 = nn.ReflectionPad2d(1)
+        self.layer0_1 = SparseCodingLayer_AfterSparse(64, 64, filterset_size=round(int(64*filter_set_mult)), k=round(int(64/k_div)))
+
+        self.layer1_0 = SparseCodingLayer_First(64, 96, filterset_size=round(int(96*filter_set_mult)), k=round(int(96/k_div)))
+        self.pad1 = nn.ReflectionPad2d(1)
+        self.layer1_1 = nn.Sequential(
+            SparseCodingLayer_AfterSparse(96, 96, filterset_size=round(int(96*filter_set_mult)), k=round(int(96/k_div))),
+            CustomMaxPool(2)
+        )
+
+        self.layer2_0 = SparseCodingLayer_First(96, 128, filterset_size=round(int(128*filter_set_mult)), k=round(int(128/k_div)))
+        self.pad2 = nn.ReflectionPad2d(1)
+        self.layer2_1 = SparseCodingLayer_AfterSparse(128, 128, filterset_size=round(int(128*filter_set_mult)), k=round(int(128/k_div)))
+
+
+        self.layer3_0 = SparseCodingLayer_First(128, 160, filterset_size=round(int(160*filter_set_mult)), k=round(int(160/k_div)))
+        self.pad3 = nn.ReflectionPad2d(1)
+        self.layer3_1 = SparseCodingLayer_AfterSparse(160, 160, filterset_size=round(int(160*filter_set_mult)), k=round(int(160/k_div)))
+
+
+        self.layer4_0 = SparseCodingLayer_First(160, 192, filterset_size=round(int(192*filter_set_mult)), k=round(int(192/k_div)))
+        self.pad4 = nn.ReflectionPad2d(1)
+        self.layer4_1 = nn.Sequential(
+            SparseCodingLayer_AfterSparse(192, 192, filterset_size=round(int(192*filter_set_mult)), k=round(int(192/k_div))),
+            CustomMaxPool(2)
+        )
+        
+
+        self.layer5_0 = nn.Sequential(
+            nn.BatchNorm2d(192),
+            nn.ReLU(),
+            nn.Conv2d(192, 256, kernel_size=3, stride=1, padding=0))
+        self.pad5 = nn.ReflectionPad2d(1)
+        self.layer5_1 = nn.Sequential(
+            nn.BatchNorm2d(256),
+            nn.ReLU(),
+            nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=0))
+
+        self.classify_bnorm = nn.BatchNorm2d(256)
+        self.classify_fc = nn.Linear(256*2*2, 100)
+
+
+    def forward(self, x):
+        x, aux_loss_00 = self.layer0_0(x)
+        x = self.pad0(x)
+        x, aux_loss_01 = self.layer0_1(x)
+
+        x, aux_loss_10 = self.layer1_0(x)
+        x = self.pad1(x)
+        x, aux_loss_11 = self.layer1_1(x)
+
+        x, aux_loss_20 = self.layer2_0(x)
+        x = self.pad2(x)
+        x, aux_loss_21 = self.layer2_1(x)
+
+        x, aux_loss_30 = self.layer3_0(x)
+        x = self.pad3(x)
+        x, aux_loss_31 = self.layer3_1(x)
+
+        x, aux_loss_40 = self.layer4_0(x)
+        x = self.pad4(x)
+        x, aux_loss_41 = self.layer4_1(x)
+
+        x = self.layer5_0(x)
+        x = self.pad5(x)
+        features = self.layer5_1(x)
+
+        aux_loss = torch.mean(torch.stack((aux_loss_00, aux_loss_01,
+                                           aux_loss_10, aux_loss_11,
+                                           aux_loss_20, aux_loss_21,
+                                           aux_loss_30, aux_loss_31,
+                                           aux_loss_40, aux_loss_41)))
+
+        if self.usecase == "random" or self.usecase == "pretrain":
+            features = features.detach().clone()
+            features.requires_grad = True
+        if self.usecase == "random" or self.usecase == "supervise":
+            aux_loss = None
+
+        features = self.classify_bnorm(features)
+        features = features.view(features.shape[0], -1)
+        logits = self.classify_fc(features)
+
+        _, preds = logits.max(dim=1)
+        return logits, preds, aux_loss
+
+class Conv12_Sparse012345(Conv12):
+    def __init__(self, filter_set_mult, k_div, usecase):
+        super().__init__(usecase)
+
+        self.layer0_0 = SparseCodingLayer_First(3, 64, filterset_size=round(int(64*filter_set_mult)), k=round(int(64/k_div)))
+        self.pad0 = nn.ReflectionPad2d(1)
+        self.layer0_1 = SparseCodingLayer_AfterSparse(64, 64, filterset_size=round(int(64*filter_set_mult)), k=round(int(64/k_div)))
+
+        self.layer1_0 = SparseCodingLayer_First(64, 96, filterset_size=round(int(96*filter_set_mult)), k=round(int(96/k_div)))
+        self.pad1 = nn.ReflectionPad2d(1)
+        self.layer1_1 = nn.Sequential(
+            SparseCodingLayer_AfterSparse(96, 96, filterset_size=round(int(96*filter_set_mult)), k=round(int(96/k_div))),
+            CustomMaxPool(2)
+        )
+
+        self.layer2_0 = SparseCodingLayer_First(96, 128, filterset_size=round(int(128*filter_set_mult)), k=round(int(128/k_div)))
+        self.pad2 = nn.ReflectionPad2d(1)
+        self.layer2_1 = SparseCodingLayer_AfterSparse(128, 128, filterset_size=round(int(128*filter_set_mult)), k=round(int(128/k_div)))
+
+
+        self.layer3_0 = SparseCodingLayer_First(128, 160, filterset_size=round(int(160*filter_set_mult)), k=round(int(160/k_div)))
+        self.pad3 = nn.ReflectionPad2d(1)
+        self.layer3_1 = SparseCodingLayer_AfterSparse(160, 160, filterset_size=round(int(160*filter_set_mult)), k=round(int(160/k_div)))
+
+
+        self.layer4_0 = SparseCodingLayer_First(160, 192, filterset_size=round(int(192*filter_set_mult)), k=round(int(192/k_div)))
+        self.pad4 = nn.ReflectionPad2d(1)
+        self.layer4_1 = nn.Sequential(
+            SparseCodingLayer_AfterSparse(192, 192, filterset_size=round(int(192*filter_set_mult)), k=round(int(192/k_div))),
+            CustomMaxPool(2)
+        )
+
+        self.layer5_0 = SparseCodingLayer_First(192, 256, filterset_size=round(int(256*filter_set_mult)), k=round(int(256/k_div)))
+        self.pad5 = nn.ReflectionPad2d(1)
+        self.layer5_1 = SparseCodingLayer_AfterSparse(256, 256, filterset_size=round(int(256*filter_set_mult)), k=round(int(256/k_div)))
+
+
+    def forward(self, x):
+        x, aux_loss_00 = self.layer0_0(x)
+        x = self.pad0(x)
+        x, aux_loss_01 = self.layer0_1(x)
+
+        x, aux_loss_10 = self.layer1_0(x)
+        x = self.pad1(x)
+        x, aux_loss_11 = self.layer1_1(x)
+
+        x, aux_loss_20 = self.layer2_0(x)
+        x = self.pad2(x)
+        x, aux_loss_21 = self.layer2_1(x)
+
+        x, aux_loss_30 = self.layer3_0(x)
+        x = self.pad3(x)
+        x, aux_loss_31 = self.layer3_1(x)
+
+        x, aux_loss_40 = self.layer4_0(x)
+        x = self.pad4(x)
+        x, aux_loss_41 = self.layer4_1(x)
+
+        x, aux_loss_50 = self.layer5_0(x)
+        x = self.pad5(x)
+        features, aux_loss_51 = self.layer5_1(x)
+
+        aux_loss = torch.mean(torch.stack((aux_loss_00, aux_loss_01,
+                                           aux_loss_10, aux_loss_11,
+                                           aux_loss_20, aux_loss_21,
+                                           aux_loss_30, aux_loss_31,
+                                           aux_loss_40, aux_loss_41,
+                                           aux_loss_50, aux_loss_51)))
+
+        if self.usecase == "random" or self.usecase == "pretrain":
+            features = features.detach().clone()
+            features.requires_grad = True
+        if self.usecase == "random" or self.usecase == "supervise":
+            aux_loss = None
+
+        features = self.classify_bnorm(features)
+        features = features.view(features.shape[0], -1)
+        logits = self.classify_fc(features)
+
+        _, preds = logits.max(dim=1)
+        return logits, preds, aux_loss
+
+
 
 class SparseCodingLayer_First_ReLU(nn.Module):
     def __init__(self, in_dim, out_dim, filterset_size, k):
@@ -870,7 +1167,6 @@ class SparseCodingLayer_AfterSparse_ReLU(SparseCodingLayer_AfterConv):
         x = self.reducer(x)
 
         return x, aux_loss
-
 
 class Conv6_Sparse012345_ReLU(Conv6):
     def __init__(self, filter_set_mult, k_div, usecase):
