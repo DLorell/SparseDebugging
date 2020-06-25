@@ -31,4 +31,4 @@ Traceback (most recent call last):
     return F.mse_loss(input, target, reduction=self.reduction)
   File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/functional.py", line 2211, in mse_loss
     ret = (input - target) ** 2
-RuntimeError: CUDA out of memory. Tried to allocate 332.00 MiB (GPU 0; 10.76 GiB total capacity; 8.13 GiB already allocated; 122.94 MiB free; 9.85 GiB reserved in total by PyTorch)
+RuntimeError: CUDA out of memory. Tried to allocate 332.00 MiB (GPU 0; 11.91 GiB total capacity; 8.45 GiB already allocated; 227.75 MiB free; 11.15 GiB reserved in total by PyTorch)
