@@ -23,16 +23,12 @@ Traceback (most recent call last):
     x, auxs = module(x)
   File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/modules/module.py", line 532, in __call__
     result = self.forward(*input, **kwargs)
-  File "/home-nfs/lorell/tmpgit/SparseDebugging/src/resnets.py", line 188, in forward
-    out, aux_loss_0 = self.residual_function_0(x)
+  File "/home-nfs/lorell/tmpgit/SparseDebugging/src/resnets.py", line 189, in forward
+    out, aux_loss_1 = self.residual_function_1(out)
   File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/modules/module.py", line 532, in __call__
     result = self.forward(*input, **kwargs)
   File "/home-nfs/lorell/tmpgit/SparseDebugging/src/models.py", line 333, in forward
     aux_loss = self.mse(self.embiggen(x.detach(), aux).detach(), aux)
-  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/modules/module.py", line 532, in __call__
-    result = self.forward(*input, **kwargs)
-  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/modules/loss.py", line 431, in forward
-    return F.mse_loss(input, target, reduction=self.reduction)
-  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/functional.py", line 2211, in mse_loss
-    ret = (input - target) ** 2
-RuntimeError: CUDA out of memory. Tried to allocate 144.00 MiB (GPU 0; 10.92 GiB total capacity; 10.25 GiB already allocated; 28.44 MiB free; 10.36 GiB reserved in total by PyTorch)
+  File "/home-nfs/lorell/tmpgit/SparseDebugging/src/models.py", line 303, in embiggen
+    out = torch.zeros_like(target)
+RuntimeError: CUDA out of memory. Tried to allocate 144.00 MiB (GPU 0; 11.75 GiB total capacity; 10.45 GiB already allocated; 113.69 MiB free; 10.64 GiB reserved in total by PyTorch)

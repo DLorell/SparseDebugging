@@ -15,8 +15,8 @@ Traceback (most recent call last):
     logits, preds, aux_loss = model(x)
   File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/modules/module.py", line 532, in __call__
     result = self.forward(*input, **kwargs)
-  File "/home-nfs/lorell/tmpgit/SparseDebugging/src/resnets.py", line 239, in forward
-    output, aux_losses_3 = self.conv3_x(output)
+  File "/home-nfs/lorell/tmpgit/SparseDebugging/src/resnets.py", line 240, in forward
+    output, aux_losses_4 = self.conv4_x(output)
   File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/modules/module.py", line 532, in __call__
     result = self.forward(*input, **kwargs)
   File "/home-nfs/lorell/tmpgit/SparseDebugging/src/resnets.py", line 274, in forward
@@ -29,6 +29,10 @@ Traceback (most recent call last):
     result = self.forward(*input, **kwargs)
   File "/home-nfs/lorell/tmpgit/SparseDebugging/src/models.py", line 333, in forward
     aux_loss = self.mse(self.embiggen(x.detach(), aux).detach(), aux)
-  File "/home-nfs/lorell/tmpgit/SparseDebugging/src/models.py", line 303, in embiggen
-    out = torch.zeros_like(target)
-RuntimeError: CUDA out of memory. Tried to allocate 72.00 MiB (GPU 0; 10.92 GiB total capacity; 9.95 GiB already allocated; 52.44 MiB free; 10.33 GiB reserved in total by PyTorch)
+  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/modules/module.py", line 532, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/modules/loss.py", line 431, in forward
+    return F.mse_loss(input, target, reduction=self.reduction)
+  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/functional.py", line 2211, in mse_loss
+    ret = (input - target) ** 2
+RuntimeError: CUDA out of memory. Tried to allocate 36.00 MiB (GPU 0; 11.93 GiB total capacity; 11.32 GiB already allocated; 21.25 MiB free; 11.45 GiB reserved in total by PyTorch)
