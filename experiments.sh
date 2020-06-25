@@ -32,10 +32,10 @@ fi
 
 # --------------- Resnet Extension --------------------------------------
 
-if false; then
+if true; then
     addition="res_"
 
-    PREFIX="Resnet"
+    PREFIX="NewResnet"
 
     DEPTH=6
     AUG="true"
@@ -87,7 +87,7 @@ fi
 
 # --------------- Sparse Layer Insertion -----------------
 
-if true; then
+if false; then
     addition="premp"
 
     PREFIX="Insertion"

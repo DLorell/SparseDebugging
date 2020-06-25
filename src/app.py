@@ -69,14 +69,14 @@ def run(depth, augmentation, mparams, position, fsmult, kdiv, auxweight, loadmod
                 MODELTYPE = models.Conv6_Sparse012345
             elif position == "012345_ReLU":
                 MODELTYPE = models.Conv6_Sparse012345_ReLU
-            elif position == "Resnet":
+            elif position == "VanillaResnet":
                 MODELTYPE = resnet34
             elif position == "Resnet_Sparse":
                 MODELTYPE = resnet34_sparse
             else:
                 raise Exception("Unknown position.")
             
-        TAG += "_Sparse"+position + "_[FS:{}, KD:{}, AuxWgt:{}]_UseCase:{}".format(fsmult, kdiv, auxweight, usecase)
+        TAG += "_"+position + "_[FS:{}, KD:{}, AuxWgt:{}]_UseCase:{}".format(fsmult, kdiv, auxweight, usecase)
 
     if not mparams:
         TAG += "_oldParams"

@@ -143,7 +143,7 @@ class ResNet(nn.Module):
 def resnet34(_, __, ___):
     """ return a ResNet 34 object
     """
-    return ResNet(BasicBlock, [3, 4, 6, 3])
+    return ResNet(BasicBlock, [3, 3, 3, 3])
 
 
 
@@ -278,4 +278,4 @@ class SequentialCustomRes(nn.Module):
 def resnet34_sparse(filter_set_mult, k_div, usecase):
     """ return a Sparse_ResNet 34 object
     """
-    return ResNet_Sparse(BasicBlock_Sparse, [3, 4, 6, 3], filter_set_mult=filter_set_mult, k_div=k_div, usecase=usecase)
+    return ResNet_Sparse(BasicBlock_Sparse, [3, 3, 3, 3], filter_set_mult=filter_set_mult, k_div=k_div, usecase=usecase)
