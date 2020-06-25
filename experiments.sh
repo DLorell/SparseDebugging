@@ -13,7 +13,7 @@ if true; then
     PREFIX="12_Insertion"
 
     DEPTH=12
-    NUMITER=4
+    NUMITER=6
     CONTINUE="continue"
 
     FSMULT=4
@@ -32,7 +32,7 @@ fi
 
 # --------------- Resnet Extension --------------------------------------
 
-if false; then
+if true; then
     addition="res_"
 
     PREFIX="Resnet"
