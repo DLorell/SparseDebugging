@@ -1,0 +1,34 @@
+Traceback (most recent call last):
+  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/runpy.py", line 193, in _run_module_as_main
+    "__main__", mod_spec)
+  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/runpy.py", line 85, in _run_code
+    exec(code, run_globals)
+  File "/home-nfs/lorell/tmpgit/SparseDebugging/src/__main__.py", line 33, in <module>
+    main()
+  File "/home-nfs/lorell/tmpgit/SparseDebugging/src/__main__.py", line 30, in main
+    run(depth=args.depth, augmentation=args.aug, mparams=args.mparams, position=args.position, fsmult=args.fsmult, kdiv=args.kdiv, auxweight=args.auxweight, loadmodel=args.load, usecase=args.usecase, prefix=args.prefix)
+  File "/home-nfs/lorell/tmpgit/SparseDebugging/src/app.py", line 86, in run
+    train_epochs(EPOCHS, auxweight, model, trainloader, testloader, criterion, optimizer, LRDROPS, LRFACTOR, TAG, usecase, loadmodel=loadmodel)
+  File "/home-nfs/lorell/tmpgit/SparseDebugging/src/app.py", line 140, in train_epochs
+    avg_loss = evaluate(model, valloader, criterion)
+  File "/home-nfs/lorell/tmpgit/SparseDebugging/src/app.py", line 210, in evaluate
+    logits, preds, aux_loss = model(x)
+  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/modules/module.py", line 532, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/home-nfs/lorell/tmpgit/SparseDebugging/src/models.py", line 923, in forward
+    x, aux_loss_11 = self.layer1_1(x)
+  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/modules/module.py", line 532, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/modules/container.py", line 100, in forward
+    input = module(input)
+  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/modules/module.py", line 532, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/home-nfs/lorell/tmpgit/SparseDebugging/src/models.py", line 333, in forward
+    aux_loss = self.mse(self.embiggen(x.detach(), aux).detach(), aux)
+  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/modules/module.py", line 532, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/modules/loss.py", line 431, in forward
+    return F.mse_loss(input, target, reduction=self.reduction)
+  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/functional.py", line 2211, in mse_loss
+    ret = (input - target) ** 2
+RuntimeError: CUDA out of memory. Tried to allocate 332.00 MiB (GPU 0; 10.73 GiB total capacity; 8.03 GiB already allocated; 319.50 MiB free; 9.63 GiB reserved in total by PyTorch)
