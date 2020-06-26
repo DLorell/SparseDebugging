@@ -1,0 +1,30 @@
+Traceback (most recent call last):
+  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/runpy.py", line 193, in _run_module_as_main
+    "__main__", mod_spec)
+  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/runpy.py", line 85, in _run_code
+    exec(code, run_globals)
+  File "/home-nfs/lorell/tmpgit/SparseDebugging/src/__main__.py", line 33, in <module>
+    main()
+  File "/home-nfs/lorell/tmpgit/SparseDebugging/src/__main__.py", line 30, in main
+    run(depth=args.depth, augmentation=args.aug, mparams=args.mparams, position=args.position, fsmult=args.fsmult, kdiv=args.kdiv, auxweight=args.auxweight, loadmodel=args.load, usecase=args.usecase, prefix=args.prefix)
+  File "/home-nfs/lorell/tmpgit/SparseDebugging/src/app.py", line 86, in run
+    train_epochs(EPOCHS, auxweight, model, trainloader, testloader, criterion, optimizer, LRDROPS, LRFACTOR, TAG, usecase, loadmodel=loadmodel)
+  File "/home-nfs/lorell/tmpgit/SparseDebugging/src/app.py", line 99, in train_epochs
+    model, optimizer, epochs_trained, train_accs, test_accs = load(model, optimizer, dirpath, filename)
+  File "/home-nfs/lorell/tmpgit/SparseDebugging/src/functional.py", line 162, in load
+    state = torch.load(dirpath + "/" + filename)
+  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/serialization.py", line 529, in load
+    return _legacy_load(opened_file, map_location, pickle_module, **pickle_load_args)
+  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/serialization.py", line 709, in _legacy_load
+    deserialized_objects[key]._set_from_file(f, offset, f_should_read_directly)
+RuntimeError: unexpected EOF, expected 499086 more bytes. The file might be corrupted.
+terminate called after throwing an instance of 'c10::Error'
+  what():  owning_ptr == NullType::singleton() || owning_ptr->refcount_.load() > 0 INTERNAL ASSERT FAILED at /opt/conda/conda-bld/pytorch_1579022060824/work/c10/util/intrusive_ptr.h:348, please report a bug to PyTorch. intrusive_ptr: Can only intrusive_ptr::reclaim() owning pointers that were created using intrusive_ptr::release(). (reclaim at /opt/conda/conda-bld/pytorch_1579022060824/work/c10/util/intrusive_ptr.h:348)
+frame #0: c10::Error::Error(c10::SourceLocation, std::string const&) + 0x47 (0x7f48d80b8627 in /home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0x148c55f (0x7f48db26f55f in /home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/lib/libtorch.so)
+frame #2: THStorage_free + 0x17 (0x7f48dba37b67 in /home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/lib/libtorch.so)
+frame #3: <unknown function> + 0x958ed7 (0x7f490a51ded7 in /home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/lib/libtorch_python.so)
+<omitting python frames>
+frame #23: __libc_start_main + 0xf5 (0x7f491fa14505 in /usr/lib64/libc.so.6)
+
+/tmp/slurmd.gpu-g36/job5217667/slurm_script: line 39: 30218 Aborted                 python -m src -depth=$pdepth -aug="$paug" -mparams="$pmparams" -position="$pposition" -fsmult=$pfsmult -kdiv=$pkdiv -auxweight="$pauxweight" -usecase="$pusecase" -load=1 -prefix="$pprefix"

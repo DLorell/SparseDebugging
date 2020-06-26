@@ -7,11 +7,11 @@ Traceback (most recent call last):
     main()
   File "/home-nfs/lorell/tmpgit/SparseDebugging/src/__main__.py", line 30, in main
     run(depth=args.depth, augmentation=args.aug, mparams=args.mparams, position=args.position, fsmult=args.fsmult, kdiv=args.kdiv, auxweight=args.auxweight, loadmodel=args.load, usecase=args.usecase, prefix=args.prefix)
-  File "/home-nfs/lorell/tmpgit/SparseDebugging/src/app.py", line 93, in run
+  File "/home-nfs/lorell/tmpgit/SparseDebugging/src/app.py", line 86, in run
     train_epochs(EPOCHS, auxweight, model, trainloader, testloader, criterion, optimizer, LRDROPS, LRFACTOR, TAG, usecase, loadmodel=loadmodel)
-  File "/home-nfs/lorell/tmpgit/SparseDebugging/src/app.py", line 174, in train_epochs
+  File "/home-nfs/lorell/tmpgit/SparseDebugging/src/app.py", line 140, in train_epochs
     avg_loss = evaluate(model, valloader, criterion)
-  File "/home-nfs/lorell/tmpgit/SparseDebugging/src/app.py", line 324, in evaluate
+  File "/home-nfs/lorell/tmpgit/SparseDebugging/src/app.py", line 210, in evaluate
     logits, preds, aux_loss = model(x)
   File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/modules/module.py", line 532, in __call__
     result = self.forward(*input, **kwargs)
