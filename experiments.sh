@@ -7,7 +7,7 @@ addition=""
 #--------------------- Conv12 Extension ---------------------------------
 
 
-if true; then
+if false; then
     addition="12_"
 
     PREFIX="12_Insertion"

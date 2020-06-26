@@ -227,7 +227,7 @@ class SparseCodingLayer_First(nn.Module):
         aux = self.topk(aux, self.k)
         aux = self.decoder(aux)
         aux = self.sigmoid(aux)
-        aux_loss = self.mse(self.embiggen(x.detach(), aux).detach(), aux)
+        aux_loss = self.mse(self.embiggen(x, aux), aux)
         aux = None
 
         x = self.encoder(x)
@@ -288,7 +288,7 @@ class SparseCodingLayer_AfterConv(nn.Module):
         #aux = self.aux_bn(aux)
         aux = self.relu(aux)
 
-        aux_loss = self.mse(self.embiggen(x.detach(), aux).detach(), aux)
+        aux_loss = self.mse(self.embiggen(x, aux), aux)
         aux = None
 
         x = self.encoder(x)
@@ -330,7 +330,7 @@ class SparseCodingLayer_AfterSparse(SparseCodingLayer_AfterConv):
         aux = self.aux_bn(aux)
         #aux = self.relu(aux)
 
-        aux_loss = self.mse(self.embiggen(x.detach(), aux).detach(), aux)
+        aux_loss = self.mse(self.embiggen(x, aux), aux)
         aux = None
 
         x = self.encoder(x)
@@ -614,7 +614,9 @@ class Conv6_Sparse012345(Conv6):
         x, aux_loss_4 = self.layer4(x)
         x, aux_loss_5 = self.layer5(x)
 
-        aux_loss = torch.mean(torch.stack((aux_loss_5,aux_loss_4, aux_loss_3, aux_loss_2, aux_loss_1, aux_loss_0)))
+        aux_losses = torch.stack((aux_loss_5,aux_loss_4, aux_loss_3, aux_loss_2, aux_loss_1, aux_loss_0))
+        #aux_loss = torch.mean(aux_losses)
+        aux_loss = torch.mean(aux_losses.detach())
 
         if self.usecase == "pretrain" or self.usecase == "random":
             x = x.detach().clone()
@@ -1019,7 +1021,7 @@ class Conv12_Sparse012345(Conv12):
         x = self.pad5(x)
         features, aux_loss_51 = self.layer5_1(x)
 
-        aux_loss = torch.mean(torch.stack((aux_loss_00, aux_loss_01,
+        aux_losses = torch.mean(torch.stack((aux_loss_00, aux_loss_01,
                                            aux_loss_10, aux_loss_11,
                                            aux_loss_20, aux_loss_21,
                                            aux_loss_30, aux_loss_31,
