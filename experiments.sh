@@ -32,7 +32,7 @@ fi
 
 # --------------- Resnet Extension --------------------------------------
 
-if false; then
+if true; then
     addition="res_"
 
     PREFIX="NewResnet"
@@ -40,7 +40,7 @@ if false; then
     DEPTH=6
     AUG="true"
     MPARAMS="true"
-    NUMITER=6
+    NUMITER=5
     CONTINUE="continue"
 
     FSMULT=4
@@ -95,7 +95,7 @@ if true; then
     DEPTH=6
     AUG="true"
     MPARAMS="true"
-    NUMITER=6
+    NUMITER=5
     CONTINUE="continue"
 
     FSMULT=4
