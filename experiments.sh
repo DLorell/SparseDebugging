@@ -7,13 +7,13 @@ addition=""
 #--------------------- Conv12 Extension ---------------------------------
 
 
-if false; then
+if true; then
     addition="12_"
 
     PREFIX="12_Insertion"
 
     DEPTH=12
-    NUMITER=6
+    NUMITER=5
     CONTINUE="continue"
 
     FSMULT=4
