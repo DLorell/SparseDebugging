@@ -615,8 +615,8 @@ class Conv6_Sparse012345(Conv6):
         x, aux_loss_5 = self.layer5(x)
 
         aux_losses = torch.stack((aux_loss_5,aux_loss_4, aux_loss_3, aux_loss_2, aux_loss_1, aux_loss_0))
-        #aux_loss = torch.mean(aux_losses)
-        aux_loss = torch.mean(aux_losses.detach())
+        aux_loss = torch.mean(aux_losses)
+        #aux_loss = torch.mean(aux_losses.detach())
 
         if self.usecase == "pretrain" or self.usecase == "random":
             x = x.detach().clone()
