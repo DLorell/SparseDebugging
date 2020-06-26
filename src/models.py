@@ -227,7 +227,7 @@ class SparseCodingLayer_First(nn.Module):
         aux = self.topk(aux, self.k)
         aux = self.decoder(aux)
         aux = self.sigmoid(aux)
-        aux_loss = self.mse(self.embiggen(x, aux), aux)
+        aux_loss = self.mse(self.embiggen(x.detach(), aux).detach(), aux)
         aux = None
 
         x = self.encoder(x)
@@ -288,7 +288,7 @@ class SparseCodingLayer_AfterConv(nn.Module):
         #aux = self.aux_bn(aux)
         aux = self.relu(aux)
 
-        aux_loss = self.mse(self.embiggen(x, aux), aux)
+        aux_loss = self.mse(self.embiggen(x.detach(), aux).detach(), aux)
         aux = None
 
         x = self.encoder(x)
@@ -330,7 +330,7 @@ class SparseCodingLayer_AfterSparse(SparseCodingLayer_AfterConv):
         aux = self.aux_bn(aux)
         #aux = self.relu(aux)
 
-        aux_loss = self.mse(self.embiggen(x, aux), aux)
+        aux_loss = self.mse(self.embiggen(x.detach(), aux).detach(), aux)
         aux = None
 
         x = self.encoder(x)
