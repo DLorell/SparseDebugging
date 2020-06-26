@@ -1,17 +1,10 @@
-import torchvision
-from torchvision import transforms
 import torch
 from src.models import Conv12, Conv6, Conv6_SparseFirst, Conv6_SparseLast, Conv6_SparseMiddle
 import src.models as models
 from src.resnets import resnet34, resnet34_sparse
-import PIL.Image as Image
-import matplotlib.pyplot as plt
-import numpy as np
-import io
-import copy
+from src.functional import save, load, plot_curves, plot_grads, plot_mags, rgetattr, get_dataloaders, hybrid_grad
 import os
-import functools
-  
+
 DEVICE = "cuda"
 SAVEFREQ = 1
 
@@ -92,33 +85,6 @@ def run(depth, augmentation, mparams, position, fsmult, kdiv, auxweight, loadmod
 
     train_epochs(EPOCHS, auxweight, model, trainloader, testloader, criterion, optimizer, LRDROPS, LRFACTOR, TAG, usecase, loadmodel=loadmodel)
 
-def save(model, optimizer, epochs_trained, train_accs, test_accs, dirpath):
-    state = {
-        "model_state": model.state_dict(),
-        "optim_state": optimizer.state_dict(),
-        "epochs_trained": epochs_trained,
-        "train_accs": train_accs,
-        "test_accs": test_accs
-    }
-
-    savepath = os.path.join(dirpath, str(epochs_trained)+".pt") 
-    if not os.path.isdir(dirpath):
-        os.mkdir(dirpath)
-
-    other_saves = [f for f in os.listdir(dirpath) if ".pt" in f]
-    for save in other_saves:
-        othersavepath = os.path.join(dirpath, save)
-        os.remove(othersavepath)
-
-    torch.save(state, savepath)
-
-def load(model, optimizer, dirpath, filename):
-    save = os.path.join(dirpath, filename)
-    state = torch.load(dirpath + "/" + filename)
-    model.load_state_dict(state["model_state"])
-    optimizer.load_state_dict(state["optim_state"])
-    return model, optimizer, state["epochs_trained"], state["train_accs"], state["test_accs"]
-
 def train_epochs(epochs, auxweight, model, trainloader, valloader, criterion, optimizer, lrdrops, lrfactor, tag, usecase, loadmodel=False, train_accs=None, test_accs=None, epochs_trained=None):
 
     train_accs = [] if train_accs is None else train_accs
@@ -184,86 +150,6 @@ def train_epochs(epochs, auxweight, model, trainloader, valloader, criterion, op
         if epoch % SAVEFREQ == 0:
             save(model, optimizer, epoch, train_accs, test_accs, "./models/"+tag)
 
-def plot_curves(train, test, path, tag):
-    plt.clf()
-    plt.title("Accuracy over Epochs")
-
-    while len(train) < len(test):
-        train = train[0] + train
-    while len(test) < len(train):
-        test = test[0] + test
-
-    domain = list(range(len(train)))
-
-    plt.plot(domain, np.array(train), '-', label="Train: {:.4f}".format(train[-1]))
-    plt.plot(domain, np.array(test), "-", label="Test: {:.4f}".format(test[-1]))
-    plt.xlabel('Epoch')
-    plt.legend(loc="best")
-
-    buf = io.BytesIO()
-    plt.savefig(buf, format='png')
-    buf.seek(0)
-    pil_img = copy.deepcopy(Image.open(buf))
-    buf.close()
-
-    pil_img.save(path + "/acc_curves_"+tag+".png")
-
-def plot_grads(grads, path, tag):
-    plt.clf()
-    plt.title("Total Gradient Magnitude over Problematic Epoch")
-
-
-    for i, grad_list in enumerate(grads):
-        plt.plot(np.array(grad_list), '-', label="Grad_{}: {:.4f}".format(i, grad_list[-1]))
-
-    plt.xlabel('Iteration')
-    plt.legend(loc="best")
-
-    buf = io.BytesIO()
-    plt.savefig(buf, format='png')
-    buf.seek(0)
-    pil_img = copy.deepcopy(Image.open(buf))
-    buf.close()
-
-    pil_img.save(path + "/grad_curves_"+tag+".png")
-
-def plot_mags(grads, path, tag):
-    plt.clf()
-    plt.title("Total Parameter Magnitude over Problematic Epoch")
-
-
-    for i, grad_list in enumerate(grads):
-        plt.plot(np.array(grad_list), '-', label="2Norm: {:.4f}".format( grad_list[-1]))
-
-    plt.xlabel('Iteration')
-    plt.legend(loc="best")
-
-    plt.ylim(bottom=0)
-
-    buf = io.BytesIO()
-    plt.savefig(buf, format='png')
-    buf.seek(0)
-    pil_img = copy.deepcopy(Image.open(buf))
-    buf.close()
-
-    pil_img.save(path + "/mag_curves_"+tag+".png")
-
-
-def rgetattr(obj, path: str, *default):
-    """
-    :param obj: Object
-    :param path: 'attr1.attr2.etc'
-    :param default: Optional default value, at any point in the path
-    :return: obj.attr1.attr2.etc
-    """
-    attrs = path.split(".")
-    try:
-        return functools.reduce(getattr, attrs, obj)
-    except AttributeError:
-        if default:
-            return default[0]
-        raise
-
 def train_epoch(model, auxweight, dataloader, criterion, optimizer, usecase):
     model.train()
     accs = []
@@ -327,47 +213,4 @@ def evaluate(model, dataloader, criterion):
         accs.append(acc.item())
     return torch.mean(torch.tensor(accs)).item()
 
-def get_dataloaders(augment, batch_size):
-    if augment:
-        train_transform = transforms.Compose([
-                                    transforms.Pad(padding=(4, 4, 4, 4)),
-                                    transforms.RandomCrop(32),
-                                    transforms.RandomHorizontalFlip(),
-                                    transforms.ToTensor(),
-                                    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-    else:
-        train_transform = transforms.Compose([
-                                    #transforms.Pad(padding=(4, 4, 4, 4)),
-                                    #transforms.RandomCrop(32),
-                                    #transforms.RandomHorizontalFlip(),
-                                    transforms.ToTensor(),
-                                    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-        
-    test_transform = transforms.Compose([
-                                    transforms.ToTensor(),
-                                    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-            
-    trainset = torchvision.datasets.CIFAR100("./data", train=True, transform=train_transform, download=True)
-    testset = torchvision.datasets.CIFAR100("./data", train=False, transform=test_transform, download=True)
-    trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=4)
-    testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size, shuffle=False, num_workers=4)
-    return trainloader, testloader
 
-
-def hybrid_grad(model, optimizer, classification_loss, aux_loss):
-    reducer_param_names = [key for key in model.state_dict() if "reducer" in key]
-    classification_head_param_names = [key for key in model.state_dict() if "classify" in key]
-
-    classification_loss.backward(retain_graph=True)
-
-    c_head_grads = {param_name: rgetattr(model, param_name).grad.clone() if rgetattr(model, param_name).grad is not None else None for param_name in classification_head_param_names}
-    reducer_grads = {param_name: rgetattr(model, param_name).grad.clone() if rgetattr(model, param_name).grad is not None else None for param_name in reducer_param_names}
-
-    optimizer.zero_grad()
-    aux_loss.backward()
-
-    for reducer in reducer_param_names:
-        rgetattr(model, reducer).grad = reducer_grads[reducer]
-    
-    for c_head in classification_head_param_names:
-        rgetattr(model, c_head).grad = c_head_grads[c_head]
