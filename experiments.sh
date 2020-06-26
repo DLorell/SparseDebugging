@@ -32,7 +32,7 @@ fi
 
 # --------------- Resnet Extension --------------------------------------
 
-if false; then
+if true; then
     addition="res_"
 
     PREFIX="NewResnet"
@@ -51,7 +51,7 @@ if false; then
         #for POSITION in "First" "01" "012" "0123" "01234" "012345"; do
             for USECASE in "supervise" "random" "pretrain" "regularize"; do
                 TAG="${addition}Use:${USECASE}_Aux:${AUXWEIGHT}_FS:${FSMULT}_KD:${KDIV}_Pos:${POSITION}_Conv6_Sparse";
-                ./submission_script.sh mmaire-gpu "${TAG}Series" "" "log/${TAG}_std.out" "log/${TAG}_std.err" 1 ${NUMITER} "${CONTINUE}" ${DEPTH} "${AUG}" "${MPARAMS}" "${POSITION}" ${FSMULT} ${KDIV} "${AUXWEIGHT}" "${USECASE}" "${PREFIX}";
+                ./submission_script.sh mmaire-gpu "${TAG}Series" "12g" "log/${TAG}_std.out" "log/${TAG}_std.err" 1 ${NUMITER} "${CONTINUE}" ${DEPTH} "${AUG}" "${MPARAMS}" "${POSITION}" ${FSMULT} ${KDIV} "${AUXWEIGHT}" "${USECASE}" "${PREFIX}";
             done
         #done
     done
@@ -87,7 +87,7 @@ fi
 
 # --------------- Sparse Layer Insertion -----------------
 
-if false; then
+if true; then
     addition="premp"
 
     PREFIX="Insertion"
@@ -95,7 +95,7 @@ if false; then
     DEPTH=6
     AUG="true"
     MPARAMS="true"
-    NUMITER=4
+    NUMITER=6
     CONTINUE="continue"
 
     FSMULT=4

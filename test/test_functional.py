@@ -25,14 +25,13 @@ def test_batch_omp_nograd():
         _, testloader = f.get_dataloaders(augment=False, batch_size=128)
         for batch in testloader:
             inputs, _ = batch
-            inputs = inputs[:1].to(DEVICE)
+            inputs = inputs[5:6].to(DEVICE)
             break
 
-        conv = nn.Conv2d(3, 32, kernel_size=3, bias=False).to(DEVICE)
+        conv = nn.Conv2d(3, 256, kernel_size=3, bias=False).to(DEVICE)
         f.orthonormalize_init(conv)
         D = conv.weight.view(conv.weight.shape[0], -1).T
-        k = 2
-
+        k = 8
         activations = conv(inputs)
         activations = f.batch_omp(activations, D, k)
 
@@ -80,7 +79,6 @@ def build_reconstruction(x, kernel_size, ch_depth=3, avg=False):
                 ones = np.ones_like(patch)
                 center_h = h + bleed
                 center_w = w + bleed
-
                 if avg:
                     avg_img[center_h-bleed:center_h+bleed+1, center_w-bleed:center_w+bleed+1, :] += patch
                 else:
