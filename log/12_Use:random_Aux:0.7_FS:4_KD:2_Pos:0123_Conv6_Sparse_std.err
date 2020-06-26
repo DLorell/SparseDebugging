@@ -20,11 +20,11 @@ Traceback (most recent call last):
 RuntimeError: unexpected EOF, expected 499086 more bytes. The file might be corrupted.
 terminate called after throwing an instance of 'c10::Error'
   what():  owning_ptr == NullType::singleton() || owning_ptr->refcount_.load() > 0 INTERNAL ASSERT FAILED at /opt/conda/conda-bld/pytorch_1579022060824/work/c10/util/intrusive_ptr.h:348, please report a bug to PyTorch. intrusive_ptr: Can only intrusive_ptr::reclaim() owning pointers that were created using intrusive_ptr::release(). (reclaim at /opt/conda/conda-bld/pytorch_1579022060824/work/c10/util/intrusive_ptr.h:348)
-frame #0: c10::Error::Error(c10::SourceLocation, std::string const&) + 0x47 (0x7f48d80b8627 in /home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/lib/libc10.so)
-frame #1: <unknown function> + 0x148c55f (0x7f48db26f55f in /home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/lib/libtorch.so)
-frame #2: THStorage_free + 0x17 (0x7f48dba37b67 in /home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/lib/libtorch.so)
-frame #3: <unknown function> + 0x958ed7 (0x7f490a51ded7 in /home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/lib/libtorch_python.so)
+frame #0: c10::Error::Error(c10::SourceLocation, std::string const&) + 0x47 (0x7fc7872bb627 in /home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0x148c55f (0x7fc78a47255f in /home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/lib/libtorch.so)
+frame #2: THStorage_free + 0x17 (0x7fc78ac3ab67 in /home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/lib/libtorch.so)
+frame #3: <unknown function> + 0x958ed7 (0x7fc7b9720ed7 in /home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/lib/libtorch_python.so)
 <omitting python frames>
-frame #23: __libc_start_main + 0xf5 (0x7f491fa14505 in /usr/lib64/libc.so.6)
+frame #23: __libc_start_main + 0xf5 (0x7fc7ce1cd505 in /usr/lib64/libc.so.6)
 
-/tmp/slurmd.gpu-g36/job5217667/slurm_script: line 39: 30218 Aborted                 python -m src -depth=$pdepth -aug="$paug" -mparams="$pmparams" -position="$pposition" -fsmult=$pfsmult -kdiv=$pkdiv -auxweight="$pauxweight" -usecase="$pusecase" -load=1 -prefix="$pprefix"
+/tmp/slurmd.gpu-g37/job5220759/slurm_script: line 39: 28054 Aborted                 python -m src -depth=$pdepth -aug="$paug" -mparams="$pmparams" -position="$pposition" -fsmult=$pfsmult -kdiv=$pkdiv -auxweight="$pauxweight" -usecase="$pusecase" -load=1 -prefix="$pprefix"
