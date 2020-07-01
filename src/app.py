@@ -47,6 +47,18 @@ def run(depth, augmentation, mparams, position, fsmult, kdiv, auxweight, loadmod
                 MODELTYPE = models.Conv12_Sparse01234
             elif position == "012345":
                 MODELTYPE = models.Conv12_Sparse012345
+            elif position == "0_Res":
+                MODELTYPE = models.Conv12_Sparse0_Res
+            elif position == "01_Res":
+                MODELTYPE = models.Conv12_Sparse01_Res
+            elif position == "012_Res":
+                MODELTYPE = models.Conv12_Sparse012_Res
+            elif position == "0123_Res":
+                MODELTYPE = models.Conv12_Sparse0123_Res
+            elif position == "01234_Res":
+                MODELTYPE = models.Conv12_Sparse01234_Res
+            elif position == "012345_Res":
+                MODELTYPE = models.Conv12_Sparse012345_Res
         else:
             if position == "First":
                 MODELTYPE = models.Conv6_SparseFirst
