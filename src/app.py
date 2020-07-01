@@ -62,6 +62,8 @@ def run(depth, augmentation, mparams, position, fsmult, kdiv, auxweight, loadmod
                 MODELTYPE = models.Conv6_Sparse0123
             elif position == "01234":
                 MODELTYPE = models.Conv6_Sparse01234
+            elif position == "012345_NonIterative":
+                MODELTYPE = models.Conv6_Sparse012345_NonIterative
             elif position == "012345":
                 MODELTYPE = models.Conv6_Sparse012345
             elif position == "012345_ReLU":
@@ -87,7 +89,11 @@ def run(depth, augmentation, mparams, position, fsmult, kdiv, auxweight, loadmod
 
     print("Training [{}]".format(TAG))
 
-    train_epochs_iterative(EPOCHS, auxweight, model, trainloader, testloader, criterion, optimizer, LRDROPS, LRFACTOR, TAG, usecase, loadmodel=loadmodel)
+    if "NonIterative" in position:
+        train_fn = train_epochs
+    else:
+        train_fn = train_epoch_iterative
+    train_fn(EPOCHS, auxweight, model, trainloader, testloader, criterion, optimizer, LRDROPS, LRFACTOR, TAG, usecase, loadmodel=loadmodel)
 
 
 def train_epochs_iterative(epochs, auxweight, model, trainloader, valloader, criterion, optimizer, lrdrops, lrfactor, tag, usecase, loadmodel=False, train_accs=None, test_accs=None, epochs_trained=None):
@@ -158,14 +164,14 @@ def train_epoch_iterative(model, auxweight, dataloader, criterion, optimizer, us
         for logits, preds, layer_aux_loss in model(x):
             if logits is None and preds is None and layer_aux_loss is not None:
                 loss = layer_aux_loss if usecase == "pretrain" else auxweight*layer_aux_loss
-                loss.backward()
+                loss.backward(retain_graph=True)
                 layer_aux_loss = None
                 loss = None
             elif layer_aux_loss is None and logits is not None and preds is not None:
                 acc = torch.sum((preds == targets).float()) / preds.numel()
                 classification_loss = criterion(logits, targets)
                 loss = (1-auxweight)*classification_loss if usecase == "regularize" else classification_loss
-                loss.backward()
+                loss.backward(retain_graph=True)
                 accs.append(acc.item())
                 layer_aux_loss = None
                 loss = None
@@ -204,7 +210,9 @@ def evaluate_iterative(model, dataloader, criterion):
     return torch.mean(torch.tensor(accs)).item()
 
 
-"""
+
+
+
 def train_epochs(epochs, auxweight, model, trainloader, valloader, criterion, optimizer, lrdrops, lrfactor, tag, usecase, loadmodel=False, train_accs=None, test_accs=None, epochs_trained=None):
 
     train_accs = [] if train_accs is None else train_accs
@@ -308,4 +316,4 @@ def evaluate(model, dataloader, criterion):
         #loss = criterion(logits, targets)
         accs.append(acc.item())
     return torch.mean(torch.tensor(accs)).item()
-"""
+
