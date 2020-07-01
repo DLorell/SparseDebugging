@@ -36,9 +36,9 @@ fi
 if false; then
     addition="res_"
 
-    PREFIX="NewResnet"
+    PREFIX="12Res"
 
-    DEPTH=6
+    DEPTH=12
     AUG="true"
     MPARAMS="true"
     NUMITER=5
@@ -48,17 +48,14 @@ if false; then
     AUXWEIGHT=0.7
 
     for KDIV in 1 2 4; do
-        POSITION="Resnet_Sparse"
-        #for POSITION in "First" "01" "012" "0123" "01234" "012345"; do
+        for POSITION in "0_Res" "01_Res" "012_Res" "0123_Res" "01234_Res" "012345_Res"; do
             for USECASE in "supervise" "random" "pretrain" "regularize"; do
-                TAG="${addition}Use:${USECASE}_Aux:${AUXWEIGHT}_FS:${FSMULT}_KD:${KDIV}_Pos:${POSITION}_Conv6_Sparse";
-                ./submission_script.sh mmaire-gpu "${TAG}Series" "12g" "log/${TAG}_std.out" "log/${TAG}_std.err" 1 ${NUMITER} "${CONTINUE}" ${DEPTH} "${AUG}" "${MPARAMS}" "${POSITION}" ${FSMULT} ${KDIV} "${AUXWEIGHT}" "${USECASE}" "${PREFIX}";
+                TAG="${addition}Use:${USECASE}_Aux:${AUXWEIGHT}_FS:${FSMULT}_KD:${KDIV}_Pos:${POSITION}_Conv12Res";
+                ./submission_script.sh mmaire-gpu "${TAG}Series" "11g" "log/${TAG}_std.out" "log/${TAG}_std.err" 1 ${NUMITER} "${CONTINUE}" ${DEPTH} "${AUG}" "${MPARAMS}" "${POSITION}" ${FSMULT} ${KDIV} "${AUXWEIGHT}" "${USECASE}" "${PREFIX}";
             done
-        #done
+        done
     done
 fi
-
-
 
 
 #  --------------- Primary / Aux loss weighting search ------------------
