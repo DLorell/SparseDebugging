@@ -4,11 +4,15 @@ import src.models as models
 from src.resnets import resnet34, resnet34_sparse
 from src.functional import save, load, plot_curves, plot_grads, plot_mags, rgetattr, get_dataloaders, hybrid_grad
 import os
+import numpy as np
+
 
 DEVICE = "cuda"
 SAVEFREQ = 1
 
 def run(depth, augmentation, mparams, position, fsmult, kdiv, auxweight, loadmodel, usecase, prefix):
+
+    torch.manual_seed(0)
 
     EPOCHS = 200 if mparams else 360
     BATCH = 128 if mparams else 256
@@ -45,7 +49,7 @@ def run(depth, augmentation, mparams, position, fsmult, kdiv, auxweight, loadmod
                 MODELTYPE = models.Conv12_Sparse012345
         else:
             if position == "First":
-                MODELTYPE = Conv6_SparseFirst
+                MODELTYPE = Conv6_SparseFirst_Iterative
             elif position == "Middle":
                 MODELTYPE = Conv6_SparseMiddle
             elif position == "Last":
@@ -58,6 +62,8 @@ def run(depth, augmentation, mparams, position, fsmult, kdiv, auxweight, loadmod
                 MODELTYPE = models.Conv6_Sparse0123
             elif position == "01234":
                 MODELTYPE = models.Conv6_Sparse01234
+            elif position == "01234_Iterative":
+                MODELTYPE = models.Conv6_Sparse01234_Iterative
             elif position == "012345":
                 MODELTYPE = models.Conv6_Sparse012345
             elif position == "012345_ReLU":
@@ -83,7 +89,12 @@ def run(depth, augmentation, mparams, position, fsmult, kdiv, auxweight, loadmod
 
     print("Training [{}]".format(TAG))
 
-    train_epochs(EPOCHS, auxweight, model, trainloader, testloader, criterion, optimizer, LRDROPS, LRFACTOR, TAG, usecase, loadmodel=loadmodel)
+    if "Iterative" in position:
+        train_fn = train_epochs_iterative
+    else:
+        train_fn = train_epochs
+
+    train_fn(EPOCHS, auxweight, model, trainloader, testloader, criterion, optimizer, LRDROPS, LRFACTOR, TAG, usecase, loadmodel=loadmodel)
 
 def train_epochs(epochs, auxweight, model, trainloader, valloader, criterion, optimizer, lrdrops, lrfactor, tag, usecase, loadmodel=False, train_accs=None, test_accs=None, epochs_trained=None):
 
@@ -98,12 +109,6 @@ def train_epochs(epochs, auxweight, model, trainloader, valloader, criterion, op
                 filename = sorted(files)[-1]
                 model, optimizer, epochs_trained, train_accs, test_accs = load(model, optimizer, dirpath, filename)
 
-    """# --------- Revisualization ----------
-    train_accs = train_accs[:200]
-    test_accs = test_accs[:200]
-    plot_curves(train=train_accs, test=test_accs, path="./visualizations", tag=tag)
-    exit(0)
-    # ------------------------------------"""
 
 
     if epochs_trained is not None:
@@ -112,13 +117,8 @@ def train_epochs(epochs, auxweight, model, trainloader, valloader, criterion, op
         epochs_trained = 0
         epoch = 0
 
-    #avg_loss = evaluate(model, valloader, criterion)
-    #test_accs.append(avg_loss)
-    #train_accs.append(avg_loss)
-    #print("Avg Acc: Train[{:.2f}], Test[{:.2f}]".format(100*train_accs[-1], 100*test_accs[-1]))
-
     for epoch in range(epochs_trained+1, epochs+1):
-        
+
         if epoch in lrdrops:
             for g in optimizer.param_groups:
                 g['lr'] = g['lr'] / lrfactor
@@ -167,6 +167,9 @@ def train_epoch(model, auxweight, dataloader, criterion, optimizer, usecase):
         acc = torch.sum((preds == targets).float()) / preds.numel()
         classification_loss = criterion(logits, targets)
 
+        print("Avg Aux Loss (Regular): ", aux_loss.item())
+        
+
         if usecase == "hybrid":
             hybrid_grad(model, optimizer, classification_loss, aux_loss)
         else:
@@ -178,24 +181,15 @@ def train_epoch(model, auxweight, dataloader, criterion, optimizer, usecase):
                 total_loss = ((1-auxweight)*classification_loss + auxweight*aux_loss)
             else:
                 raise Exception('Unknown usecase "{}"'.format(usecase))
-            
-            total_loss.backward()
 
-        """
-        with torch.no_grad():
-            accumulator = torch.tensor(0).float()
-            w_accumulator = torch.tensor(0).float()
-            for param in model.parameters():
-                w_accumulator += torch.sum(param ** 2)
-                accumulator += torch.sum(param.grad ** 2)
-            grad_magnitude = torch.sqrt(accumulator)
-            weight_magnitude = torch.sqrt(w_accumulator)
-            grads.append(grad_magnitude)
-            mags.append(weight_magnitude)
-        """
+            total_loss.backward()
 
         optimizer.step()
         accs.append(acc.item())
+
+
+        print("Weight Norm: ", torch.norm(model.layer0.encoder.weight, p="fro"))
+        if i > 10: exit(0)
 
     return torch.mean(torch.tensor(accs)).item(), grads, mags
 
@@ -212,5 +206,144 @@ def evaluate(model, dataloader, criterion):
         #loss = criterion(logits, targets)
         accs.append(acc.item())
     return torch.mean(torch.tensor(accs)).item()
+
+
+
+
+def train_epochs_iterative(epochs, auxweight, model, trainloader, valloader, criterion, optimizer, lrdrops, lrfactor, tag, usecase, loadmodel=False, train_accs=None, test_accs=None, epochs_trained=None):
+
+    train_accs = [] if train_accs is None else train_accs
+    test_accs = [] if test_accs is None else test_accs
+
+    if loadmodel:
+        dirpath = "./models/"+tag
+        if os.path.isdir(dirpath):
+            files = [f for f in os.listdir(dirpath) if ".pt" in f]
+            if len(files) > 0:
+                filename = sorted(files)[-1]
+                model, optimizer, epochs_trained, train_accs, test_accs = load(model, optimizer, dirpath, filename)
+
+
+    if epochs_trained is not None:
+        epoch = epochs_trained
+    else:
+        epochs_trained = 0
+        epoch = 0
+
+    for epoch in range(epochs_trained+1, epochs+1):
+        
+        if epoch in lrdrops:
+            for g in optimizer.param_groups:
+                g['lr'] = g['lr'] / lrfactor
+
+        lrs = []
+        for g in optimizer.param_groups:
+                lrs.append(g['lr'])
+        lrs = set(lrs)
+        assert len(lrs) == 1
+                
+        print("                              \rEpoch [{}/{}] (lr: {})".format(epoch, epochs, list(lrs)[0]))
+        
+
+        avg_train_loss, grads, mags = train_epoch_iterative(model, auxweight, trainloader, criterion, optimizer, usecase)
+        train_accs.append(avg_train_loss)
+        #train_grads += grads
+        #train_mags += mags
+
+        avg_loss = evaluate_iterative(model, valloader, criterion)
+        test_accs.append(avg_loss)
+
+        print("Avg Acc: Train[{:.2f}], Test[{:.2f}]".format(100*train_accs[-1], 100*test_accs[-1]))
+
+        if epoch % 5 == 0:
+            plot_curves(train=train_accs, test=test_accs, path="./visualizations", tag=tag)
+        #plot_grads([train_grads], "./visualizations/grads")
+        #plot_mags([train_mags], "./visualizations/mags")
+
+        if epoch % SAVEFREQ == 0:
+            save(model, optimizer, epoch, train_accs, test_accs, "./models/"+tag)
+
+
+def train_epoch_iterative(model, auxweight, dataloader, criterion, optimizer, usecase):
+    model.train()
+    accs = []
+    grads = []
+    mags = []
+    for i, batch in enumerate(dataloader):
+        print("                              \r{:.2f}% done...".format(100*(i+1)/len(dataloader)), end='\r')
+        x, targets = batch
+        x = x.to(DEVICE)
+        targets = targets.to(DEVICE)
+
+        optimizer.zero_grad()
+        aux_losses = []
+        for layer_num, (logits, preds, layer_aux_loss) in enumerate(model(x)):
+            if logits is None and preds is None and layer_aux_loss is not None:
+
+                aux_losses.append(layer_aux_loss.item())
+
+                if usecase == "pretrain":
+                    loss = layer_aux_loss
+                else:
+                    loss = auxweight*layer_aux_loss
+
+                #if layer_num > 0:
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+
+                for p in model.parameters():
+                    p.grad = None
+
+                print("Weight Norm: ", torch.norm(model.layer0.encoder.weight, p="fro"))
+                
+            elif layer_aux_loss is None and logits is not None and preds is not None:
+                acc = torch.sum((preds == targets).float()) / preds.numel()
+                classification_loss = criterion(logits, targets)
+
+                if usecase == "regularize":
+                    loss = (1-auxweight)*classification_loss
+                else:
+                    loss = classification_loss
+
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+                accs.append(acc.item())
+            elif layer_aux_loss is None and logits is None and preds is None:
+                    pass
+            else:
+                raise Exception("Invalid combination of model outputs.")
+        print("\n\nAvg Aux Loss (iterative): ", np.sum(aux_losses))
+        if i > 10: exit(0)
+
+    return torch.mean(torch.tensor(accs)).item(), grads, mags
+
+
+def evaluate_iterative(model, dataloader, criterion):
+    model.eval()
+    accs = []
+    for i, batch in enumerate(dataloader):
+        print("                               \r{:.2f}% done...".format(100*(i+1)/len(dataloader)), end='\r')
+        x, targets = batch
+        x = x.to(DEVICE)
+        targets = targets.to(DEVICE)
+
+        for layer_num, (logits, preds, layer_aux_loss) in enumerate(model(x)):
+            if logits is None and preds is None and layer_aux_loss is not None:
+                pass
+
+            elif layer_aux_loss is None and logits is not None and preds is not None:
+                acc = torch.sum((preds == targets).float()) / preds.numel()
+                classification_loss = criterion(logits, targets)
+
+                accs.append(acc.item())
+            elif layer_aux_loss is None and logits is None and preds is None:
+                    pass
+            else:
+                raise Exception("Invalid combination of model outputs.")
+
+    return torch.mean(torch.tensor(accs)).item()
+
 
 

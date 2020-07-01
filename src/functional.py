@@ -132,7 +132,7 @@ def get_dataloaders(augment, batch_size):
             
     trainset = torchvision.datasets.CIFAR100("./data", train=True, transform=train_transform, download=True)
     testset = torchvision.datasets.CIFAR100("./data", train=False, transform=test_transform, download=True)
-    trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=4)
+    trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=False, num_workers=4)
     testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size, shuffle=False, num_workers=4)
     return trainloader, testloader
 
