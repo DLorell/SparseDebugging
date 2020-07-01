@@ -10,7 +10,7 @@ addition=""
 if true; then
     addition="12_"
 
-    PREFIX="12_Insertion"
+    PREFIX="NEW12_Insertion"
 
     DEPTH=12
     NUMITER=5
