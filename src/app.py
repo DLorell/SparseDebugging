@@ -92,7 +92,7 @@ def run(depth, augmentation, mparams, position, fsmult, kdiv, auxweight, loadmod
     if "NonIterative" in position:
         train_fn = train_epochs
     else:
-        train_fn = train_epoch_iterative
+        train_fn = train_epochs_iterative
     train_fn(EPOCHS, auxweight, model, trainloader, testloader, criterion, optimizer, LRDROPS, LRFACTOR, TAG, usecase, loadmodel=loadmodel)
 
 

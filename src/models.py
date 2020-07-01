@@ -15,7 +15,7 @@ class Linearize(nn.Module):
         return x.view(x.shape[0], -1)
 
 
-
+""" Non Iterative
 class Conv12(nn.Module):
     def __init__(self, usecase):
         super().__init__()
@@ -121,6 +121,126 @@ class Conv12(nn.Module):
         logits, preds = self.classify(x)
 
         return logits, preds, None
+"""
+
+class CustomPad(nn.Module):
+    def __init__(self, padding):
+        super().__init__()
+        self.pad = nn.ReflectionPad2d(padding)
+    def forward(self, x):
+        if isinstance(x, type((1,2))):
+            extra = x[1]
+            x = x[0]
+        else:
+            extra = None
+
+        x = self.pad(x)
+
+        if extra is not None:
+            return x, extra
+        else:
+            return x
+
+class Conv12(nn.Module):
+    def __init__(self, usecase):
+        super().__init__()
+        self.usecase = usecase
+
+        self.layer0_0 = nn.Sequential(
+            nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=0),
+            CustomPad(1))
+        self.layer0_1 = nn.Sequential(
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
+            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=0))
+
+
+        self.layer1_0 = nn.Sequential(
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
+            nn.Conv2d(64, 96, kernel_size=3, stride=1, padding=0),
+            CustomPad(1))
+        self.layer1_1 = nn.Sequential(
+            nn.BatchNorm2d(96),
+            nn.ReLU(),
+            nn.Conv2d(96, 96, kernel_size=3, stride=1, padding=0),
+            nn.MaxPool2d(2))
+
+
+        self.layer2_0 = nn.Sequential(
+            nn.BatchNorm2d(96),
+            nn.ReLU(),
+            nn.Conv2d(96, 128, kernel_size=3, stride=1, padding=0),
+            CustomPad(1))
+        self.layer2_1 = nn.Sequential(
+            nn.BatchNorm2d(128),
+            nn.ReLU(),
+            nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=0))
+
+
+        self.layer3_0 = nn.Sequential(
+            nn.BatchNorm2d(128),
+            nn.ReLU(),
+            nn.Conv2d(128, 160, kernel_size=3, stride=1, padding=0),
+            CustomPad(1))
+        self.layer3_1 = nn.Sequential(
+            nn.BatchNorm2d(160),
+            nn.ReLU(),
+            nn.Conv2d(160, 160, kernel_size=3, stride=1, padding=0))
+
+
+        self.layer4_0 = nn.Sequential(
+            nn.BatchNorm2d(160),
+            nn.ReLU(),
+            nn.Conv2d(160, 192, kernel_size=3, stride=1, padding=0),
+            CustomPad(1))
+        self.layer4_1 = nn.Sequential(
+            nn.BatchNorm2d(192),
+            nn.ReLU(),
+            nn.Conv2d(192, 192, kernel_size=3, stride=1, padding=0),
+            nn.MaxPool2d(2))
+
+        self.layer5_0 = nn.Sequential(
+            nn.BatchNorm2d(192),
+            nn.ReLU(),
+            nn.Conv2d(192, 256, kernel_size=3, stride=1, padding=0),
+            CustomPad(1))
+        self.layer5_1 = nn.Sequential(
+            nn.BatchNorm2d(256),
+            nn.ReLU(),
+            nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=0))
+
+        self.classify = ClassificationHead(256*2*2, 100)
+        self.layers = []
+        self.non_aux = [self.layer0_0, self.layer0_1, self.layer1_0, self.layer1_1,
+                        self.layer2_0, self.layer2_1, self.layer3_0, self.layer3_1,
+                        self.layer4_0, self.layer4_1, self.layer5_0, self.layer5_1]
+
+
+    def forward(self, x):
+        for i, layer in enumerate(self.layers):
+            x, layer_aux_loss = layer(x)
+
+            div = self.num_aux_losses 
+            layer_aux_loss = layer_aux_loss / div if div > 0 else layer_aux_loss
+            if self.usecase == "random" or self.usecase == "supervise":
+                layer_aux_loss = None
+            preds = logits = None
+
+            yield logits, preds, layer_aux_loss
+
+
+        for i, layer in enumerate(self.non_aux):
+            x = layer(x)
+
+        layer_aux_loss = None
+        if self.usecase == "pretrain" or self.usecase == "random":
+            x = x.detach().clone()
+            x.requires_grad = True
+        logits, preds = self.classify(x)
+        yield logits, preds, layer_aux_loss
+
+    
 
 
 class Conv6(nn.Module):
@@ -357,7 +477,7 @@ class SparseCodingLayer_AfterSparse(SparseCodingLayer_AfterConv):
         aux = self.aux_bn(aux)
         #aux = self.relu(aux)
 
-        aux_loss = self.mse(self.embiggen(x, aux), aux)
+        aux_loss = self.mse(self.embiggen(aux_in.detach(), aux).detach(), aux)
         aux = None
 
 
@@ -586,6 +706,199 @@ class Conv6_Sparse012345(Conv6):
         self.non_aux = []
 
 
+
+
+
+
+class Conv12_Sparse0(Conv12):
+    def __init__(self, filter_set_mult, k_div, usecase):
+        super().__init__(usecase)
+
+        self.num_aux_losses = 2
+
+        self.layer0_0 = nn.Sequential(
+            SparseCodingLayer_First(3, 64, filterset_size=round(int(64*filter_set_mult)), k=round(int(64/k_div))),
+            CustomPad(1))
+        self.layer0_1 = nn.Sequential(SparseCodingLayer_AfterSparse(64, 64, filterset_size=round(int(64*filter_set_mult)), k=round(int(64/k_div))))
+
+        self.layers = [self.layer0_0, self.layer0_1]
+        self.non_aux = [self.layer1_0, self.layer1_1,
+                        self.layer2_0, self.layer2_1, self.layer3_0, self.layer3_1,
+                        self.layer4_0, self.layer4_1, self.layer5_0, self.layer5_1]
+
+class Conv12_Sparse01(Conv12):
+    def __init__(self, filter_set_mult, k_div, usecase):
+        super().__init__(usecase)
+
+        self.num_aux_losses = 4
+
+        self.layer0_0 = nn.Sequential(
+            SparseCodingLayer_First(3, 64, filterset_size=round(int(64*filter_set_mult)), k=round(int(64/k_div))),
+            CustomPad(1))
+        self.layer0_1 = nn.Sequential(SparseCodingLayer_AfterSparse(64, 64, filterset_size=round(int(64*filter_set_mult)), k=round(int(64/k_div))))
+
+        self.layer1_0 = nn.Sequential(
+            SparseCodingLayer_First(64, 96, filterset_size=round(int(96*filter_set_mult)), k=round(int(96/k_div))),
+            CustomPad(1))
+        self.layer1_1 = nn.Sequential(SparseCodingLayer_AfterSparse(96, 96, filterset_size=round(int(96*filter_set_mult)), k=round(int(96/k_div))),
+            CustomMaxPool(2))
+
+        self.layers = [self.layer0_0, self.layer0_1, self.layer1_0, self.layer1_1]
+
+        self.non_aux = [self.layer2_0, self.layer2_1, self.layer3_0, self.layer3_1,
+                        self.layer4_0, self.layer4_1, self.layer5_0, self.layer5_1]
+
+class Conv12_Sparse012(Conv12):
+    def __init__(self, filter_set_mult, k_div, usecase):
+        super().__init__(usecase)
+
+        self.num_aux_losses = 6
+
+        self.layer0_0 = nn.Sequential(
+            SparseCodingLayer_First(3, 64, filterset_size=round(int(64*filter_set_mult)), k=round(int(64/k_div))),
+            CustomPad(1))
+        self.layer0_1 = nn.Sequential(SparseCodingLayer_AfterSparse(64, 64, filterset_size=round(int(64*filter_set_mult)), k=round(int(64/k_div))))
+
+        self.layer1_0 = nn.Sequential(
+            SparseCodingLayer_First(64, 96, filterset_size=round(int(96*filter_set_mult)), k=round(int(96/k_div))),
+            CustomPad(1))
+        self.layer1_1 = nn.Sequential(SparseCodingLayer_AfterSparse(96, 96, filterset_size=round(int(96*filter_set_mult)), k=round(int(96/k_div))),
+            CustomMaxPool(2))
+
+
+        self.layer2_0 = nn.Sequential(
+            SparseCodingLayer_First(96, 128, filterset_size=round(int(128*filter_set_mult)), k=round(int(128/k_div))),
+            CustomPad(1))
+        self.layer2_1 = nn.Sequential(SparseCodingLayer_AfterSparse(128, 128, filterset_size=round(int(128*filter_set_mult)), k=round(int(128/k_div))))
+
+
+        self.layers = [self.layer0_0, self.layer0_1, self.layer1_0, self.layer1_1,
+                       self.layer2_0, self.layer2_1]
+    
+        self.non_aux = [self.layer3_0, self.layer3_1,
+                        self.layer4_0, self.layer4_1, self.layer5_0, self.layer5_1]
+
+class Conv12_Sparse0123(Conv12):
+    def __init__(self, filter_set_mult, k_div, usecase):
+        super().__init__(usecase)
+
+        self.num_aux_losses = 8
+
+        self.layer0_0 = nn.Sequential(
+            SparseCodingLayer_First(3, 64, filterset_size=round(int(64*filter_set_mult)), k=round(int(64/k_div))),
+            CustomPad(1))
+        self.layer0_1 = nn.Sequential(SparseCodingLayer_AfterSparse(64, 64, filterset_size=round(int(64*filter_set_mult)), k=round(int(64/k_div))))
+
+        self.layer1_0 = nn.Sequential(
+            SparseCodingLayer_First(64, 96, filterset_size=round(int(96*filter_set_mult)), k=round(int(96/k_div))),
+            CustomPad(1))
+        self.layer1_1 = nn.Sequential(SparseCodingLayer_AfterSparse(96, 96, filterset_size=round(int(96*filter_set_mult)), k=round(int(96/k_div))),
+            CustomMaxPool(2))
+
+
+        self.layer2_0 = nn.Sequential(
+            SparseCodingLayer_First(96, 128, filterset_size=round(int(128*filter_set_mult)), k=round(int(128/k_div))),
+            CustomPad(1))
+        self.layer2_1 = nn.Sequential(SparseCodingLayer_AfterSparse(128, 128, filterset_size=round(int(128*filter_set_mult)), k=round(int(128/k_div))))
+
+        self.layer3_0 = nn.Sequential(
+            SparseCodingLayer_First(128, 160, filterset_size=round(int(160*filter_set_mult)), k=round(int(160/k_div))),
+            CustomPad(1))
+        self.layer3_1 = nn.Sequential(SparseCodingLayer_AfterSparse(160, 160, filterset_size=round(int(160*filter_set_mult)), k=round(int(160/k_div))))
+
+
+        self.layers = [self.layer0_0, self.layer0_1, self.layer1_0, self.layer1_1,
+                       self.layer2_0, self.layer2_1, self.layer3_0, self.layer3_1]
+    
+        self.non_aux = [self.layer4_0, self.layer4_1, self.layer5_0, self.layer5_1]
+
+class Conv12_Sparse01234(Conv12):
+    def __init__(self, filter_set_mult, k_div, usecase):
+        super().__init__(usecase)
+
+        self.num_aux_losses = 10
+
+        self.layer0_0 = nn.Sequential(
+            SparseCodingLayer_First(3, 64, filterset_size=round(int(64*filter_set_mult)), k=round(int(64/k_div))),
+            CustomPad(1))
+        self.layer0_1 = nn.Sequential(SparseCodingLayer_AfterSparse(64, 64, filterset_size=round(int(64*filter_set_mult)), k=round(int(64/k_div))))
+
+        self.layer1_0 = nn.Sequential(
+            SparseCodingLayer_First(64, 96, filterset_size=round(int(96*filter_set_mult)), k=round(int(96/k_div))),
+            CustomPad(1))
+        self.layer1_1 = nn.Sequential(SparseCodingLayer_AfterSparse(96, 96, filterset_size=round(int(96*filter_set_mult)), k=round(int(96/k_div))),
+            CustomMaxPool(2))
+
+
+        self.layer2_0 = nn.Sequential(
+            SparseCodingLayer_First(96, 128, filterset_size=round(int(128*filter_set_mult)), k=round(int(128/k_div))),
+            CustomPad(1))
+        self.layer2_1 = nn.Sequential(SparseCodingLayer_AfterSparse(128, 128, filterset_size=round(int(128*filter_set_mult)), k=round(int(128/k_div))))
+
+        self.layer3_0 = nn.Sequential(
+            SparseCodingLayer_First(128, 160, filterset_size=round(int(160*filter_set_mult)), k=round(int(160/k_div))),
+            CustomPad(1))
+        self.layer3_1 = nn.Sequential(SparseCodingLayer_AfterSparse(160, 160, filterset_size=round(int(160*filter_set_mult)), k=round(int(160/k_div))))
+
+
+        self.layer4_0 = nn.Sequential(
+            SparseCodingLayer_First(160, 192, filterset_size=round(int(192*filter_set_mult)), k=round(int(192/k_div))),
+            CustomPad(1))
+        self.layer4_1 = nn.Sequential(SparseCodingLayer_AfterSparse(192, 192, filterset_size=round(int(192*filter_set_mult)), k=round(int(192/k_div))),
+            CustomMaxPool(2))
+
+
+        self.layers = [self.layer0_0, self.layer0_1, self.layer1_0, self.layer1_1,
+                       self.layer2_0, self.layer2_1, self.layer3_0, self.layer3_1,
+                       self.layer4_0, self.layer4_1]
+    
+        self.non_aux = [self.layer5_0, self.layer5_1]
+
+class Conv12_Sparse012345(Conv12):
+    def __init__(self, filter_set_mult, k_div, usecase):
+        super().__init__(usecase)
+
+        self.num_aux_losses = 12
+
+        self.layer0_0 = nn.Sequential(
+            SparseCodingLayer_First(3, 64, filterset_size=round(int(64*filter_set_mult)), k=round(int(64/k_div))),
+            CustomPad(1))
+        self.layer0_1 = nn.Sequential(SparseCodingLayer_AfterSparse(64, 64, filterset_size=round(int(64*filter_set_mult)), k=round(int(64/k_div))))
+
+        self.layer1_0 = nn.Sequential(
+            SparseCodingLayer_First(64, 96, filterset_size=round(int(96*filter_set_mult)), k=round(int(96/k_div))),
+            CustomPad(1))
+        self.layer1_1 = nn.Sequential(SparseCodingLayer_AfterSparse(96, 96, filterset_size=round(int(96*filter_set_mult)), k=round(int(96/k_div))),
+            CustomMaxPool(2))
+
+
+        self.layer2_0 = nn.Sequential(
+            SparseCodingLayer_First(96, 128, filterset_size=round(int(128*filter_set_mult)), k=round(int(128/k_div))),
+            CustomPad(1))
+        self.layer2_1 = nn.Sequential(SparseCodingLayer_AfterSparse(128, 128, filterset_size=round(int(128*filter_set_mult)), k=round(int(128/k_div))))
+
+        self.layer3_0 = nn.Sequential(
+            SparseCodingLayer_First(128, 160, filterset_size=round(int(160*filter_set_mult)), k=round(int(160/k_div))),
+            CustomPad(1))
+        self.layer3_1 = nn.Sequential(SparseCodingLayer_AfterSparse(160, 160, filterset_size=round(int(160*filter_set_mult)), k=round(int(160/k_div))))
+
+
+        self.layer4_0 = nn.Sequential(
+            SparseCodingLayer_First(160, 192, filterset_size=round(int(192*filter_set_mult)), k=round(int(192/k_div))),
+            CustomPad(1))
+        self.layer4_1 = nn.Sequential(SparseCodingLayer_AfterSparse(192, 192, filterset_size=round(int(192*filter_set_mult)), k=round(int(192/k_div))),
+            CustomMaxPool(2))
+
+        self.layer5_0 = nn.Sequential(
+            SparseCodingLayer_First(192, 256, filterset_size=round(int(256*filter_set_mult)), k=round(int(256/k_div))),
+            CustomPad(1))
+        self.layer5_1 = nn.Sequential(SparseCodingLayer_AfterSparse(256, 256, filterset_size=round(int(256*filter_set_mult)), k=round(int(256/k_div))))
+
+        
+        self.layers = [self.layer0_0, self.layer0_1, self.layer1_0, self.layer1_1,
+                       self.layer2_0, self.layer2_1, self.layer3_0, self.layer3_1,
+                       self.layer4_0, self.layer4_1, self.layer5_0, self.layer5_1]
+        self.non_aux = []
 
 
 
