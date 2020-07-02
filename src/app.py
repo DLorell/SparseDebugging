@@ -4,12 +4,28 @@ from src.resnets import resnet34, resnet34_sparse
 from src.functional import save, load, plot_curves, plot_grads, plot_mags, rgetattr, get_dataloaders, hybrid_grad
 import os
 import numpy as np
+from src.granular import HierarchicalRingTopK, HierarchicalRingOMP
+from time import sleep
 
 
 DEVICE = "cuda"
 SAVEFREQ = 1
 
 def run(depth, augmentation, mparams, position, fsmult, kdiv, auxweight, loadmodel, usecase, prefix):
+
+
+    """###########################################
+
+    torch.manual_seed(1)
+    x = torch.randn((128, 3, 32, 32)).cuda()
+    ring = models.Conv6_SparseFirst_Hierarchical(4, 2, "regularize").cuda()
+    for logits, preds, layer_aux_loss in ring(x):
+        print("Done!")
+        sleep(5)
+        exit(0)
+    exit(0)
+    ###########################################"""
+
 
     torch.autograd.set_detect_anomaly(True)
     torch.manual_seed(0)
@@ -84,6 +100,18 @@ def run(depth, augmentation, mparams, position, fsmult, kdiv, auxweight, loadmod
                 MODELTYPE = resnet34
             elif position == "Resnet_Sparse":
                 MODELTYPE = resnet34_sparse
+            elif position == "First_Hierarchical":
+                MODELTYPE = models.Conv6_SparseFirst_Hierarchical
+            elif position == "01_Hierarchical":
+                MODELTYPE = models.Conv6_Sparse01_Hierarchical
+            elif position == "012_Hierarchical":
+                MODELTYPE = models.Conv6_Sparse012_Hierarchical
+            elif position == "0123_Hierarchical":
+                MODELTYPE = models.Conv6_Sparse0123_Hierarchical
+            elif position == "01234_Hierarchical":
+                MODELTYPE = models.Conv6_Sparse01234_Hierarchical
+            elif position == "012345_Hierarchical":
+                MODELTYPE = models.Conv6_Sparse012345_Hierarchical
             else:
                 raise Exception("Unknown position.")
             

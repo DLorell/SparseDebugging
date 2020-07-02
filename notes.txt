@@ -1,3 +1,1 @@
-python -m src -position 012345 -fsmult 4 -kdiv 2 -auxweight 0.7 -usecase regularize -prefix THROUGHLINETEST -load false
-
-python -m src -position 012345 -fsmult 4 -kdiv 2 -auxweight 0.7 -usecase regularize -prefix AUXDETACHANDTHROUGHLINETEST -load false
+No bias?

@@ -12,7 +12,6 @@ import functools
 
 def batch_omp(activations, D, k):
     device = activations.device
-
     alpha_0, shape = _batch_vectorize(activations)
     G = torch.mm(D.T, D)
     I = None
@@ -59,14 +58,6 @@ def batch_omp(activations, D, k):
         alpha = alpha_0 - beta.squeeze(-1)
         #16
         n += 1
-        
-        """
-        print("Current max k: {}, Current min k: {}, Current avg k: {}".format(
-            torch.max(torch.sum((s != 0).float(), dim=1)),
-            torch.min(torch.sum((s != 0).float(), dim=1)),
-            torch.mean(torch.sum((s != 0).float(), dim=1))))
-        """
-    
     return _batch_unvectorize(s, shape)
 
 def _k_criterion(s, k):
