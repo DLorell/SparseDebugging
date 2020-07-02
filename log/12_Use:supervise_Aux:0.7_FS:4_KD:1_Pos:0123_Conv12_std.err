@@ -1,0 +1,20 @@
+Traceback (most recent call last):
+  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/runpy.py", line 193, in _run_module_as_main
+    "__main__", mod_spec)
+  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/runpy.py", line 85, in _run_code
+    exec(code, run_globals)
+  File "/home-nfs/lorell/new_12s/SparseDebugging/src/__main__.py", line 33, in <module>
+    main()
+  File "/home-nfs/lorell/new_12s/SparseDebugging/src/__main__.py", line 30, in main
+    run(depth=args.depth, augmentation=args.aug, mparams=args.mparams, position=args.position, fsmult=args.fsmult, kdiv=args.kdiv, auxweight=args.auxweight, loadmodel=args.load, usecase=args.usecase, prefix=args.prefix)
+  File "/home-nfs/lorell/new_12s/SparseDebugging/src/app.py", line 108, in run
+    train_fn(EPOCHS, auxweight, model, trainloader, testloader, criterion, optimizer, LRDROPS, LRFACTOR, TAG, usecase, loadmodel=loadmodel)
+  File "/home-nfs/lorell/new_12s/SparseDebugging/src/app.py", line 122, in train_epochs_iterative
+    model, optimizer, epochs_trained, train_accs, test_accs = load(model, optimizer, dirpath, filename)
+  File "/home-nfs/lorell/new_12s/SparseDebugging/src/functional.py", line 162, in load
+    state = torch.load(dirpath + "/" + filename)
+  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/serialization.py", line 526, in load
+    if _is_zipfile(opened_file):
+  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/serialization.py", line 76, in _is_zipfile
+    if ord(magic_byte) != ord(read_byte):
+TypeError: ord() expected a character, but string of length 0 found
