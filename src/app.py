@@ -28,7 +28,7 @@ def run(depth, augmentation, mparams, position, fsmult, kdiv, auxweight, loadmod
 
 
     torch.autograd.set_detect_anomaly(True)
-    torch.manual_seed(0)
+    #torch.manual_seed(0)
 
     EPOCHS = 200 if mparams else 360
     BATCH = 128 if mparams else 256
