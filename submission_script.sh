@@ -17,7 +17,13 @@ KDIV=${14}
 AUXWEIGHT=${15}
 USECASE=${16}
 PREFIX=${17}
+LR=${18}
 
+
+if [ -z ${LR+x} ]
+then
+    LR=-99
+fi
 
 
 if [[ "$CONTINUE" == "continue" ]]
@@ -28,10 +34,10 @@ else
 fi
 
 
-sbatch -J "$SERIESNAME" -d singleton --exclude=gpu-g30,gpu-g1 --partition="$PARTITION" --constraint="$CONSTRAINT" --output="$OUTPUT" --error="$ERROR" -c"$UNITS" run.sh -d $DEPTH -a "$AUG" -m "$MPARAMS" -p "$POSITION" -f $FSMULT -k $KDIV -w "$AUXWEIGHT" -u "$USECASE" -c $CONTINUE -s "$PREFIX"
+sbatch -J "$SERIESNAME" -d singleton --exclude=gpu-g30,gpu-g1 --partition="$PARTITION" --constraint="$CONSTRAINT" --output="$OUTPUT" --error="$ERROR" -c"$UNITS" run.sh -d $DEPTH -a "$AUG" -m "$MPARAMS" -p "$POSITION" -f $FSMULT -k $KDIV -w "$AUXWEIGHT" -u "$USECASE" -c $CONTINUE -s "$PREFIX" -l $LR
 
 END=$SUBMISSIONS
 CONTINUE=1
 for ((i=1; i<END; i++)); do
-    sbatch -J "$SERIESNAME" -d singleton --exclude=gpu-g30,gpu-g1 --partition="$PARTITION" --constraint="$CONSTRAINT" --output="$OUTPUT" --error="$ERROR" -c"$UNITS" run.sh -d $DEPTH -a "$AUG" -m "$MPARAMS" -p "$POSITION" -f $FSMULT -k $KDIV -w "$AUXWEIGHT" -u "$USECASE" -c $CONTINUE -s "$PREFIX"
+    sbatch -J "$SERIESNAME" -d singleton --exclude=gpu-g30,gpu-g1 --partition="$PARTITION" --constraint="$CONSTRAINT" --output="$OUTPUT" --error="$ERROR" -c"$UNITS" run.sh -d $DEPTH -a "$AUG" -m "$MPARAMS" -p "$POSITION" -f $FSMULT -k $KDIV -w "$AUXWEIGHT" -u "$USECASE" -c $CONTINUE -s "$PREFIX" -l $LR
 done

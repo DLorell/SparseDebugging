@@ -11,7 +11,7 @@ from time import sleep
 DEVICE = "cuda"
 SAVEFREQ = 1
 
-def run(depth, augmentation, mparams, position, fsmult, kdiv, auxweight, loadmodel, usecase, prefix):
+def run(lr, depth, augmentation, mparams, position, fsmult, kdiv, auxweight, loadmodel, usecase, prefix):
 
 
     """###########################################
@@ -36,6 +36,7 @@ def run(depth, augmentation, mparams, position, fsmult, kdiv, auxweight, loadmod
     NESTEROV= True if mparams else False
     LRFACTOR = 5 if mparams else 10
     LRDROPS = [60, 120, 160] if mparams else [120, 240]
+    LR = lr if lr != -99 else 0.1
 
     MODELARGS = [usecase]
 
@@ -115,7 +116,7 @@ def run(depth, augmentation, mparams, position, fsmult, kdiv, auxweight, loadmod
             else:
                 raise Exception("Unknown position.")
             
-        TAG += "_"+position + "_[FS:{}, KD:{}, AuxWgt:{}]_UseCase:{}".format(fsmult, kdiv, auxweight, usecase)
+        TAG += "_"+position + "_[FS:{}, KD:{}, AuxWgt:{}, lr:{}]_UseCase:{}".format(fsmult, kdiv, auxweight, LR, usecase)
 
     if not mparams:
         TAG += "_oldParams"
@@ -125,7 +126,7 @@ def run(depth, augmentation, mparams, position, fsmult, kdiv, auxweight, loadmod
     trainloader, testloader = get_dataloaders(augmentation, BATCH)
     model = MODELTYPE(*MODELARGS).to(DEVICE)
     criterion = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.SGD(model.parameters(), lr=0.1, momentum=0.9, nesterov=NESTEROV, weight_decay=DECAY)
+    optimizer = torch.optim.SGD(model.parameters(), lr=LR, momentum=0.9, nesterov=NESTEROV, weight_decay=DECAY)
 
     print("Training [{}]".format(TAG))
 

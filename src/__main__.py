@@ -24,10 +24,11 @@ def main():
     parser.add_argument('-load', default=True, type=str2bool, action='store', required=False, help="Whether or not to try and load latest model.")
     parser.add_argument('-usecase', default="regularize", type=str, help="random/pretrain/regularize/supervise use case selection.")
     parser.add_argument('-prefix', default="", type=str, required=False, help="save directory prefix")
+    parser.add_argument('-lr', default=-99.0, type=float, required=False, help="starting learning rate")
 
     args = parser.parse_args()
 
-    run(depth=args.depth, augmentation=args.aug, mparams=args.mparams, position=args.position, fsmult=args.fsmult, kdiv=args.kdiv, auxweight=args.auxweight, loadmodel=args.load, usecase=args.usecase, prefix=args.prefix)
+    run(lr=args.lr, depth=args.depth, augmentation=args.aug, mparams=args.mparams, position=args.position, fsmult=args.fsmult, kdiv=args.kdiv, auxweight=args.auxweight, loadmodel=args.load, usecase=args.usecase, prefix=args.prefix)
 
 if __name__ == "__main__":
     main()
