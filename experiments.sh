@@ -35,7 +35,7 @@ fi
 #--------------------- Conv12 Extension ---------------------------------
 
 
-if true; then
+if false; then
     addition="12_"
 
     PREFIX="NEW12_Insertion"
