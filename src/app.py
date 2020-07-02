@@ -204,7 +204,7 @@ def train_epoch_iterative(model, auxweight, dataloader, criterion, optimizer, us
         for logits, preds, layer_aux_loss in model(x):
             if logits is None and preds is None and layer_aux_loss is not None:
                 loss = layer_aux_loss if usecase == "pretrain" else auxweight*layer_aux_loss
-                #loss.backward(retain_graph=True)
+                loss.backward(retain_graph=True)
                 layer_aux_loss = None
                 loss = None
             elif layer_aux_loss is None and logits is not None and preds is not None:
