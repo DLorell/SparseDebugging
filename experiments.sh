@@ -35,7 +35,7 @@ fi
 #--------------------- Conv12 Extension ---------------------------------
 
 
-if true; then
+if false; then
     addition="12_"
 
     PREFIX="NEW12_Insertion"
@@ -61,7 +61,7 @@ fi
 
 # --------------- Resnet Extension --------------------------------------
 
-if true; then
+if false; then
     addition="res_"
 
     PREFIX="12Res"
@@ -113,10 +113,10 @@ fi
 
 # --------------- Sparse Layer Insertion -----------------
 
-if false; then
-    addition="premp"
+if true; then
+    addition="oldways"
 
-    PREFIX="Insertion"
+    PREFIX="OldWaySearch"
 
     DEPTH=6
     AUG="true"
@@ -128,26 +128,15 @@ if false; then
     AUXWEIGHT=0.7
 
 
-    KDIV=2
-    POSITION="012"
-    for USECASE in "pretrain" "regularize"; do
-        TAG="${addition}Use:${USECASE}_Aux:${AUXWEIGHT}_FS:${FSMULT}_KD:${KDIV}_Pos:${POSITION}_Conv6_Sparse";
-        ./submission_script.sh mmaire-gpu "${TAG}Series" "" "log/${TAG}_std.out" "log/${TAG}_std.err" 1 ${NUMITER} "${CONTINUE}" ${DEPTH} "${AUG}" "${MPARAMS}" "${POSITION}" ${FSMULT} ${KDIV} "${AUXWEIGHT}" "${USECASE}" "${PREFIX}";
-    done
-
-    POSITION="0123"
-    USECASE="regularize"
-    TAG="${addition}Use:${USECASE}_Aux:${AUXWEIGHT}_FS:${FSMULT}_KD:${KDIV}_Pos:${POSITION}_Conv6_Sparse";
-    ./submission_script.sh mmaire-gpu "${TAG}Series" "" "log/${TAG}_std.out" "log/${TAG}_std.err" 1 ${NUMITER} "${CONTINUE}" ${DEPTH} "${AUG}" "${MPARAMS}" "${POSITION}" ${FSMULT} ${KDIV} "${AUXWEIGHT}" "${USECASE}" "${PREFIX}";
-    
-
     #for KDIV in 1 2 4; do
-    #    for POSITION in "First" "01" "012" "0123" "01234" "012345"; do
-    #        for USECASE in "supervise" "random" "pretrain" "regularize"; do
-    #            TAG="${addition}Use:${USECASE}_Aux:${AUXWEIGHT}_FS:${FSMULT}_KD:${KDIV}_Pos:${POSITION}_Conv6_Sparse";
-    #            ./submission_script.sh mmaire-gpu "${TAG}Series" "" "log/${TAG}_std.out" "log/${TAG}_std.err" 1 ${NUMITER} "${CONTINUE}" ${DEPTH} "${AUG}" "${MPARAMS}" "${POSITION}" ${FSMULT} ${KDIV} "${AUXWEIGHT}" "${USECASE}" "${PREFIX}";
-    #        done
-    #    done
+        KDIV=2
+        #for POSITION in "First" "01" "012" "0123" "01234" "012345"; do
+            POSITION="012345"
+            for USECASE in "supervise" "random" "pretrain" "regularize"; do
+                TAG="${addition}Use:${USECASE}_Aux:${AUXWEIGHT}_FS:${FSMULT}_KD:${KDIV}_Pos:${POSITION}_Conv6_Sparse";
+                ./submission_script.sh mmaire-gpu "${TAG}Series" "" "log/${TAG}_std.out" "log/${TAG}_std.err" 1 ${NUMITER} "${CONTINUE}" ${DEPTH} "${AUG}" "${MPARAMS}" "${POSITION}" ${FSMULT} ${KDIV} "${AUXWEIGHT}" "${USECASE}" "${PREFIX}";
+            done
+        #done
     #done
 fi
  
