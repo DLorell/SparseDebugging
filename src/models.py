@@ -924,7 +924,7 @@ class Conv6_Sparse012345_Hierarchical(Conv6):
         self.layer5 = SparseCodingLayer_AfterSparse_Arch(in_dim=192, out_dim=256, filterset_size=round(int(256*filter_set_mult)), k_div=k_div)
 
         self.layers = [self.layer0, self.layer1, self.layer2, self.layer3,
-                       self.layer4, self.layer5, self.classify]
+                       self.layer4, self.layer5]
         self.non_aux = []
 
 
@@ -1029,7 +1029,7 @@ class Conv6_Sparse012345(Conv6):
         self.layer5 = SparseCodingLayer_AfterSparse(in_dim=192, out_dim=256, filterset_size=round(int(256*filter_set_mult)), k=round(int(256/k_div)))
 
         self.layers = [self.layer0, self.layer1, self.layer2, self.layer3,
-                       self.layer4, self.layer5, self.classify]
+                       self.layer4, self.layer5]
         self.non_aux = []
 
 
