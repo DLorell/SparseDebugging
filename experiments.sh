@@ -96,7 +96,7 @@ if true; then
     KDIV=1
     AUG="true"
     MPARAMS="true"
-    NUMITER=6
+    NUMITER=3
     CONTINUE="continue"
 
     for FSMULT in 2 4; do
