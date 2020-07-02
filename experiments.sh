@@ -6,7 +6,7 @@ addition=""
 
 # --------------- Hierarchical Sparse Layer Insertion -----------------
 
-if false; then
+if true; then
     addition="arch_"
 
     PREFIX="ArchInsertion"
@@ -14,7 +14,7 @@ if false; then
     DEPTH=6
     AUG="true"
     MPARAMS="true"
-    NUMITER=5
+    NUMITER=7
     CONTINUE="continue"
 
     FSMULT=4
@@ -35,13 +35,13 @@ fi
 #--------------------- Conv12 Extension ---------------------------------
 
 
-if false; then
+if true; then
     addition="12_"
 
     PREFIX="NEW12_Insertion"
 
     DEPTH=12
-    NUMITER=5
+    NUMITER=7
     CONTINUE="continue"
 
     FSMULT=4
@@ -61,7 +61,7 @@ fi
 
 # --------------- Resnet Extension --------------------------------------
 
-if false; then
+if true; then
     addition="res_"
 
     PREFIX="12Res"
@@ -69,7 +69,7 @@ if false; then
     DEPTH=12
     AUG="true"
     MPARAMS="true"
-    NUMITER=5
+    NUMITER=7
     CONTINUE="continue"
 
     FSMULT=4
@@ -113,7 +113,7 @@ fi
 
 # --------------- Sparse Layer Insertion -----------------
 
-if true; then
+if false; then
     addition="oldways"
 
     PREFIX="OldWaySearch"
