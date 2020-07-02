@@ -6,7 +6,7 @@ addition=""
 
 # --------------- Hierarchical Sparse Layer Insertion -----------------
 
-if true; then
+if false; then
     addition=""
 
     PREFIX="ArchInsertion"
@@ -35,7 +35,7 @@ fi
 #--------------------- Conv12 Extension ---------------------------------
 
 
-if false; then
+if true; then
     addition="12_"
 
     PREFIX="NEW12_Insertion"
@@ -61,7 +61,7 @@ fi
 
 # --------------- Resnet Extension --------------------------------------
 
-if false; then
+if true; then
     addition="res_"
 
     PREFIX="12Res"
