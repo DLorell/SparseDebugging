@@ -17,14 +17,14 @@ Warning: Traceback of forward call that caused the error:
     x, layer_aux_loss = layer(x)
   File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/modules/module.py", line 532, in __call__
     result = self.forward(*input, **kwargs)
-  File "/home-nfs/lorell/new_12s/SparseDebugging/src/models.py", line 607, in forward
-    aux_loss = self.mse(self.embiggen(aux_in.detach(), aux).detach(), aux)
+  File "/home-nfs/lorell/new_12s/SparseDebugging/src/models.py", line 604, in forward
+    aux = self.aux_bn(aux)
   File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/modules/module.py", line 532, in __call__
     result = self.forward(*input, **kwargs)
-  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/modules/loss.py", line 431, in forward
-    return F.mse_loss(input, target, reduction=self.reduction)
-  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/functional.py", line 2211, in mse_loss
-    ret = (input - target) ** 2
+  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/modules/batchnorm.py", line 107, in forward
+    exponential_average_factor, self.eps)
+  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/functional.py", line 1670, in batch_norm
+    training, momentum, eps, torch.backends.cudnn.enabled
  (print_stack at /opt/conda/conda-bld/pytorch_1579022060824/work/torch/csrc/autograd/python_anomaly_mode.cpp:57)
 Traceback (most recent call last):
   File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/runpy.py", line 193, in _run_module_as_main
@@ -45,4 +45,4 @@ Traceback (most recent call last):
     torch.autograd.backward(self, gradient, retain_graph, create_graph)
   File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/autograd/__init__.py", line 99, in backward
     allow_unreachable=True)  # allow_unreachable flag
-RuntimeError: Function 'PowBackward0' returned nan values in its 0th output.
+RuntimeError: Function 'CudnnBatchNormBackward' returned nan values in its 0th output.
