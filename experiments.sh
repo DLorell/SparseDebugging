@@ -98,19 +98,48 @@ if true; then
     KDIV=1
     AUG="true"
     MPARAMS="true"
-    NUMITER=1
+    NUMITER=3
     CONTINUE="continue"
 
+
     for FSMULT in 2 4; do
-        for POSITION in "First" "012" "012345"; do
-            for AUXWEIGHT in 0.9 0.7 0.5 0.3 0.1; do
-                for LR in 0.2 0.1 0.03 0.01 0.005; do
-                    TAG="${addition}Use:${USECASE}_Aux:${AUXWEIGHT}_FS:${FSMULT}_KD:${KDIV}_Pos:${POSITION}_Lr:${LR}_Conv6HyperSearch";
-                ./submission_script.sh mmaire-gpu "${TAG}Series" "" "log/${TAG}_std.out" "log/${TAG}_std.err" 1 ${NUMITER} "${CONTINUE}" ${DEPTH} "${AUG}" "${MPARAMS}" "${POSITION}" ${FSMULT} ${KDIV} "${AUXWEIGHT}" "${USECASE}" "${PREFIX}" ${LR};
-                done
-            done
+        POSITION="012345"
+        for AUXWEIGHT in 0.7 0.1; do
+            LR=0.2
+            
+            TAG="${addition}Use:${USECASE}_Aux:${AUXWEIGHT}_FS:${FSMULT}_KD:${KDIV}_Pos:${POSITION}_Lr:${LR}_Conv6HyperSearch";
+            ./submission_script.sh mmaire-gpu "${TAG}Series" "" "log/${TAG}_std.out" "log/${TAG}_std.err" 1 ${NUMITER} "${CONTINUE}" ${DEPTH} "${AUG}" "${MPARAMS}" "${POSITION}" ${FSMULT} ${KDIV} "${AUXWEIGHT}" "${USECASE}" "${PREFIX}" ${LR};
         done
     done
+
+
+    LR=0.2
+    POSITION="First"
+    
+    FSMULT=2
+    AUXWEIGHT=0.1
+    TAG="${addition}Use:${USECASE}_Aux:${AUXWEIGHT}_FS:${FSMULT}_KD:${KDIV}_Pos:${POSITION}_Lr:${LR}_Conv6HyperSearch";
+    ./submission_script.sh mmaire-gpu "${TAG}Series" "" "log/${TAG}_std.out" "log/${TAG}_std.err" 1 ${NUMITER} "${CONTINUE}" ${DEPTH} "${AUG}" "${MPARAMS}" "${POSITION}" ${FSMULT} ${KDIV} "${AUXWEIGHT}" "${USECASE}" "${PREFIX}" ${LR};
+        
+
+    FSMULT=4
+    AUXWEIGHT=0.3
+    TAG="${addition}Use:${USECASE}_Aux:${AUXWEIGHT}_FS:${FSMULT}_KD:${KDIV}_Pos:${POSITION}_Lr:${LR}_Conv6HyperSearch";
+    ./submission_script.sh mmaire-gpu "${TAG}Series" "" "log/${TAG}_std.out" "log/${TAG}_std.err" 1 ${NUMITER} "${CONTINUE}" ${DEPTH} "${AUG}" "${MPARAMS}" "${POSITION}" ${FSMULT} ${KDIV} "${AUXWEIGHT}" "${USECASE}" "${PREFIX}" ${LR};
+       
+
+
+
+    #for FSMULT in 2 4; do
+    #    for POSITION in "First" "012" "012345"; do
+    #        for AUXWEIGHT in 0.9 0.7 0.5 0.3 0.1; do
+    #            for LR in 0.2 0.1 0.03 0.01 0.005; do
+    #                TAG="${addition}Use:${USECASE}_Aux:${AUXWEIGHT}_FS:${FSMULT}_KD:${KDIV}_Pos:${POSITION}_Lr:${LR}_Conv6HyperSearch";
+    #            ./submission_script.sh mmaire-gpu "${TAG}Series" "" "log/${TAG}_std.out" "log/${TAG}_std.err" 1 ${NUMITER} "${CONTINUE}" ${DEPTH} "${AUG}" "${MPARAMS}" "${POSITION}" ${FSMULT} ${KDIV} "${AUXWEIGHT}" "${USECASE}" "${PREFIX}" ${LR};
+    #            done
+    #        done
+    #    done
+    #done
 
 fi
 
