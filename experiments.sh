@@ -73,7 +73,9 @@ if true; then
     CONTINUE="continue"
 
     FSMULT=4
-    AUXWEIGHT=0.03
+    AUXWEIGHT=-999
+
+    LR=0.03
 
     for KDIV in 1 2 4; do
         POSITION="012345_Res"
@@ -81,7 +83,7 @@ if true; then
             USECASE="supervise"
             #for USECASE in "supervise" "random" "pretrain" "regularize"; do
                 TAG="${addition}Use:${USECASE}_Aux:${AUXWEIGHT}_FS:${FSMULT}_KD:${KDIV}_Pos:${POSITION}_Conv12Res";
-                ./submission_script.sh mmaire-gpu "${TAG}Series" "11g" "log/${TAG}_std.out" "log/${TAG}_std.err" 1 ${NUMITER} "${CONTINUE}" ${DEPTH} "${AUG}" "${MPARAMS}" "${POSITION}" ${FSMULT} ${KDIV} "${AUXWEIGHT}" "${USECASE}" "${PREFIX}";
+                ./submission_script.sh mmaire-gpu "${TAG}Series" "11g" "log/${TAG}_std.out" "log/${TAG}_std.err" 1 ${NUMITER} "${CONTINUE}" ${DEPTH} "${AUG}" "${MPARAMS}" "${POSITION}" ${FSMULT} ${KDIV} "${AUXWEIGHT}" "${USECASE}" "${PREFIX}" ${LR};
             #done
         #done
     done
