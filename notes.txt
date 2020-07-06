@@ -1,1 +1,2 @@
-No bias?
+No bias? If bias, then the decoding step is...weird. 
+Start decoding by subtracting the bias from all non-zero input activations?

@@ -87,9 +87,21 @@ class HierarchicalRingOMP(HierarchicalRingTopK):
         super().__init__(in_ch, levels=levels, ks=ks)
         self.selector = src.nonlinearities.BatchOMP()
 
-    def decode(self, descriptor):
-        raise Exception("Need to implement this.")
+        # Create "decoder" using the same parameters as the encoding dict.
 
+        dict_shape = self.dict.weight.shape
+        sparse_size = dict_shape[0]
+        patch_size = dict_shape[1] * dict_shape[2] * dict_shape[3]
+        self.decoder = nn.Conv2d(in_channels=sparse_size, out_channels=patch_size, kernel_size=1, bias=False)
+        self.decoder.weight = nn.parameter.Parameter(
+            self.dict.weight.view(sparse_size, -1, 1, 1).permute(1,0,2,3)
+        )
+
+    def decode(self, descriptor):
+        non_zeros = (descriptor != 0).float()
+        de-biased = (descriptor - (self.dict.bias.unsqueeze(0).unsqueeze(2).unsqueeze(3))) * non_zeros
+        recon = self.decoder(descriptor)
+        return recon
 
 
 

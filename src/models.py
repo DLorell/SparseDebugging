@@ -818,9 +818,6 @@ class SparseCodingLayer_AfterSparse_ArchOMP(SparseCodingLayer_ArchOMP):
 
 
 
-
-
-
 class CustomMaxPool(nn.Module):
     def __init__(self, factor):
         super().__init__()
