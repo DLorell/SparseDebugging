@@ -99,7 +99,7 @@ class HierarchicalRingOMP(HierarchicalRingTopK):
 
     def decode(self, descriptor):
         non_zeros = (descriptor != 0).float()
-        de-biased = (descriptor - (self.dict.bias.unsqueeze(0).unsqueeze(2).unsqueeze(3))) * non_zeros
+        debiased = (descriptor - (self.dict.bias.unsqueeze(0).unsqueeze(2).unsqueeze(3))) * non_zeros
         recon = self.decoder(descriptor)
         return recon
 
