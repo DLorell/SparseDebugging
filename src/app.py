@@ -11,7 +11,7 @@ from time import sleep
 DEVICE = "cuda"
 SAVEFREQ = 1
 
-def run(lr, depth, augmentation, mparams, position, fsmult, kdiv, auxweight, loadmodel, usecase, prefix):
+def run(lr, depth, augmentation, mparams, position, fsmult, kdiv, auxweight, loadmodel, usecase, prefix, omp):
 
 
     """###########################################
@@ -49,7 +49,9 @@ def run(lr, depth, augmentation, mparams, position, fsmult, kdiv, auxweight, loa
             MODELTYPE = models.Conv12
         else:
             raise Exception("Unknown depth.")
-    else:
+    else:def __init__(self, in_dim, out_dim, filterset_size, k_div, padding=0, stride=1):
+        super().__init__(in_dim, out_dim, filterset_size, k_div, padding=padding, stride=stride)
+
         MODELARGS = [fsmult, kdiv] + MODELARGS
         if depth == 12:
             if position == "0":
@@ -101,18 +103,24 @@ def run(lr, depth, augmentation, mparams, position, fsmult, kdiv, auxweight, loa
                 MODELTYPE = resnet34
             elif position == "Resnet_Sparse":
                 MODELTYPE = resnet34_sparse
-            elif position == "First_Hierarchical":
-                MODELTYPE = models.Conv6_SparseFirst_Hierarchical
-            elif position == "01_Hierarchical":
-                MODELTYPE = models.Conv6_Sparse01_Hierarchical
-            elif position == "012_Hierarchical":
-                MODELTYPE = models.Conv6_Sparse012_Hierarchical
-            elif position == "0123_Hierarchical":
-                MODELTYPE = models.Conv6_Sparse0123_Hierarchical
-            elif position == "01234_Hierarchical":
-                MODELTYPE = models.Conv6_Sparse01234_Hierarchical
-            elif position == "012345_Hierarchical":
-                MODELTYPE = models.Conv6_Sparse012345_Hierarchical
+            elif "Hierarchical" in position:
+                
+                MODELARGS += [omp]
+
+                if position == "First_Hierarchical":
+                    MODELTYPE = models.Conv6_SparseFirst_Hierarchical
+                elif position == "01_Hierarchical":
+                    MODELTYPE = models.Conv6_Sparse01_Hierarchical
+                elif position == "012_Hierarchical":
+                    MODELTYPE = models.Conv6_Sparse012_Hierarchical
+                elif position == "0123_Hierarchical":
+                    MODELTYPE = models.Conv6_Sparse0123_Hierarchical
+                elif position == "01234_Hierarchical":
+                    MODELTYPE = models.Conv6_Sparse01234_Hierarchical
+                elif position == "012345_Hierarchical":
+                    MODELTYPE = models.Conv6_Sparse012345_Hierarchical
+                else:
+                    raise Exception("Unknown Hierarchical Position")
             else:
                 raise Exception("Unknown position.")
             

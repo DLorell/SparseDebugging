@@ -10,6 +10,7 @@ import copy
 import os
 import functools
 
+
 def batch_omp(activations, D, k):
     device = activations.device
     alpha_0, shape = _batch_vectorize(activations)

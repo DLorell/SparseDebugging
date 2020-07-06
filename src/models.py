@@ -617,8 +617,8 @@ class SparseCodingLayer_AfterSparse(SparseCodingLayer_AfterConv):
 
 
 
-class SparseCodingLayer_Arch(nn.Module):
-    def __init__(self, in_dim, out_dim, filterset_size, k_div, padding=0, stride=1):
+class SparseCodingLayer_ArchTopK(nn.Module):
+    def __init__(self, in_dim, out_dim, filterset_size, k_div, padding, stride):
         super().__init__()
         self.out_dim = out_dim
 
@@ -676,7 +676,7 @@ class SparseCodingLayer_Arch(nn.Module):
 
         return out
 
-class SparseCodingLayer_First_Arch(SparseCodingLayer_Arch):
+class SparseCodingLayer_First_ArchTopK(SparseCodingLayer_ArchTopK):
     def __init__(self, in_dim, out_dim, filterset_size, k_div, padding=0, stride=1):
         super().__init__(in_dim, out_dim, filterset_size, k_div, padding=padding, stride=stride)
         self.sigmoid = nn.Sigmoid()
@@ -694,7 +694,7 @@ class SparseCodingLayer_First_Arch(SparseCodingLayer_Arch):
 
         return x, aux_loss
 
-class SparseCodingLayer_AfterSparse_Arch(SparseCodingLayer_Arch):
+class SparseCodingLayer_AfterSparse_ArchTopK(SparseCodingLayer_ArchTopK):
     def __init__(self, in_dim, out_dim, filterset_size, k_div, padding=0, stride=1):
         super().__init__(in_dim, out_dim, filterset_size, k_div, padding=padding, stride=stride)
 
@@ -715,6 +715,109 @@ class SparseCodingLayer_AfterSparse_Arch(SparseCodingLayer_Arch):
         x = self.reducer(x)
 
         return x, aux_loss
+
+
+class SparseCodingLayer_ArchOMP(nn.Module):
+    def __init__(self, in_dim, out_dim, filterset_size, k_div, padding, stride):
+        super().__init__()
+        self.out_dim = out_dim
+
+        self.kernel_size = 3
+        self.padding = padding
+        self.stride = stride
+
+        levels, atoms_per_level = self.filterset_to_levels(filterset_size)
+
+        self.encoder = HierarchicalRingOMP(in_dim, levels=levels, ks=[round(int(dim/k_div)) for dim in atoms_per_level])
+        self.reducer = nn.Conv2d(np.sum(atoms_per_level), out_dim, kernel_size=1, stride=1, padding=0)
+
+        self.mse = nn.MSELoss()
+    
+    def forward(self, x):
+        raise NotImplementedError
+
+    def filterset_to_levels(self, target):
+        cur = 1
+        atoms = [8]
+        while np.sum(atoms) < target:
+            new_atoms = atoms[-1]*2
+            if np.sum(atoms)+new_atoms < target:
+                cur += 1
+                atoms.append(new_atoms)
+                continue
+            else:
+                diff_below = np.abs(np.sum(atoms) - target)
+                diff_above = np.abs(np.sum(atoms) + new_atoms - target)
+
+                if diff_below <= diff_above:
+                    break
+                else:
+                    cur += 1
+                    atoms.append(new_atoms)
+                    break
+        return cur, atoms
+
+    def embiggen(self, x, target):
+        bleed = (self.kernel_size - 1) // 2
+        out = torch.zeros_like(target)
+        if self.padding > 0:
+            padded = torch.zeros((x.shape[0], x.shape[1], x.shape[2]+(2*self.padding), x.shape[3]+(2*self.padding)))
+            padded[:, :, self.padding:-self.padding, self.padding:-self.padding] = x
+            x = padded
+        for h in range(bleed, x.shape[-2] - bleed, self.stride):
+            for w in range(bleed, x.shape[-1] - bleed, self.stride):
+                patch = x[:, :, h-bleed:h+bleed+1, w-bleed:w+bleed+1].contiguous().view(x.shape[0], -1)
+
+
+                #print(h, h-bleed, w, w-bleed, type(out), type(patch),
+                #      patch.shape, out[:, :, h-bleed, w-bleed].shape)
+                out[:, :, h-bleed, w-bleed] = patch.to(out.device)
+
+        return out
+
+class SparseCodingLayer_First_ArchOMP(SparseCodingLayer_ArchOMP):
+    def __init__(self, in_dim, out_dim, filterset_size, k_div, padding=0, stride=1):
+        super().__init__(in_dim, out_dim, filterset_size, k_div, padding=padding, stride=stride)
+        self.sigmoid = nn.Sigmoid()
+        
+    def forward(self, x):
+        aux_in = x.detach().clone()
+        aux = self.encoder(aux_in)
+        aux = self.encoder.decode(aux)
+        aux = self.sigmoid(aux)
+        aux_loss = self.mse(self.embiggen(aux_in, aux).detach(), aux)
+        aux = None
+
+        x = self.encoder(x)
+        x = self.reducer(x)
+
+        return x, aux_loss
+
+class SparseCodingLayer_AfterSparse_ArchOMP(SparseCodingLayer_ArchOMP):
+    def __init__(self, in_dim, out_dim, filterset_size, k_div, padding=0, stride=1):
+        super().__init__(in_dim, out_dim, filterset_size, k_div, padding=padding, stride=stride)
+
+        self.bn = nn.BatchNorm2d(in_dim)
+        self.aux_bn = nn.BatchNorm2d(in_dim*self.kernel_size*self.kernel_size)
+
+    def forward(self, x):
+        x = self.bn(x)
+
+        aux_in = x.detach().clone()
+        aux = self.encoder(aux_in)
+        aux = self.encoder.decode(aux)
+        aux = self.aux_bn(aux)
+        aux_loss = self.mse(self.embiggen(aux_in.detach(), aux).detach(), aux)
+        aux = None
+
+        x = self.encoder(x)
+        x = self.reducer(x)
+
+        return x, aux_loss
+
+
+
+
 
 
 
@@ -826,79 +929,109 @@ class Conv6_SparseLast(Conv6):
 
 
 class Conv6_SparseFirst_Hierarchical(Conv6):
-    def __init__(self, filter_set_mult, k_div, usecase):
+    def __init__(self, filter_set_mult, k_div, usecase, omp):
         super().__init__(usecase)
+        if omp:
+            sparseclassfirst = SparseCodingLayer_First_ArchOMP
+            sparseclass = SparseCodingLayer_AfterSparse_ArchOMP
+        else:
+            sparseclassfirst = SparseCodingLayer_First_ArchTopK
+            sparseclass = SparseCodingLayer_AfterSparse_ArchTopK
 
         self.num_aux_losses = 1
 
         out_dim = 64
         # 248 Sparse channels, akin to the 64*4=256 sparse channels of the non-hierarchical version.
-        self.layer0 = SparseCodingLayer_First_Arch(in_dim=3, out_dim=out_dim, filterset_size=round(int(out_dim*filter_set_mult)), k_div=k_div)
+        self.layer0 = sparseclassfirst(in_dim=3, out_dim=out_dim, filterset_size=round(int(out_dim*filter_set_mult)), k_div=k_div)
         self.layers = [self.layer0]
         self.non_aux = [self.layer1, self.layer2, self.layer3, self.layer4,
                         self.layer5]
 
 class Conv6_Sparse01_Hierarchical(Conv6):
-    def __init__(self, filter_set_mult, k_div, usecase):
+    def __init__(self, filter_set_mult, k_div, usecase, omp):
         super().__init__(usecase)
+        if omp:
+            sparseclassfirst = SparseCodingLayer_First_ArchOMP
+            sparseclass = SparseCodingLayer_AfterSparse_ArchOMP
+        else:
+            sparseclassfirst = SparseCodingLayer_First_ArchTopK
+            sparseclass = SparseCodingLayer_AfterSparse_ArchTopK
 
         self.num_aux_losses = 2
 
-        self.layer0 = SparseCodingLayer_First_Arch(in_dim=3, out_dim=64, filterset_size=round(int(64*filter_set_mult)), k_div=k_div)
+        self.layer0 = sparseclassfirst(in_dim=3, out_dim=64, filterset_size=round(int(64*filter_set_mult)), k_div=k_div)
         self.layer1 = nn.Sequential(
-            SparseCodingLayer_AfterSparse_Arch(in_dim=64, out_dim=96, filterset_size=round(int(96*filter_set_mult)), k_div=k_div),
+            sparseclass(in_dim=64, out_dim=96, filterset_size=round(int(96*filter_set_mult)), k_div=k_div),
             CustomMaxPool(2))
 
         self.layers = [self.layer0, self.layer1]
         self.non_aux = [self.layer2, self.layer3, self.layer4, self.layer5]
 
 class Conv6_Sparse012_Hierarchical(Conv6):
-    def __init__(self, filter_set_mult, k_div, usecase):
+    def __init__(self, filter_set_mult, k_div, usecase, omp):
         super().__init__(usecase)
+        if omp:
+            sparseclassfirst = SparseCodingLayer_First_ArchOMP
+            sparseclass = SparseCodingLayer_AfterSparse_ArchOMP
+        else:
+            sparseclassfirst = SparseCodingLayer_First_ArchTopK
+            sparseclass = SparseCodingLayer_AfterSparse_ArchTopK
 
         self.num_aux_losses = 3
 
-        self.layer0 = SparseCodingLayer_First_Arch(in_dim=3, out_dim=64, filterset_size=round(int(64*filter_set_mult)), k_div=k_div)
+        self.layer0 = sparseclassfirst(in_dim=3, out_dim=64, filterset_size=round(int(64*filter_set_mult)), k_div=k_div)
         self.layer1 = nn.Sequential(
-            SparseCodingLayer_AfterSparse_Arch(in_dim=64, out_dim=96, filterset_size=round(int(96*filter_set_mult)), k_div=k_div),
+            sparseclass(in_dim=64, out_dim=96, filterset_size=round(int(96*filter_set_mult)), k_div=k_div),
             CustomMaxPool(2))
-        self.layer2 = SparseCodingLayer_AfterSparse_Arch(in_dim=96, out_dim=128, filterset_size=round(int(128*filter_set_mult)), k_div=k_div)
+        self.layer2 = sparseclass(in_dim=96, out_dim=128, filterset_size=round(int(128*filter_set_mult)), k_div=k_div)
 
 
         self.layers = [self.layer0, self.layer1, self.layer2]
         self.non_aux = [self.layer3, self.layer4, self.layer5]
 
 class Conv6_Sparse0123_Hierarchical(Conv6):
-    def __init__(self, filter_set_mult, k_div, usecase):
+    def __init__(self, filter_set_mult, k_div, usecase, omp):
         super().__init__(usecase)
+        if omp:
+            sparseclassfirst = SparseCodingLayer_First_ArchOMP
+            sparseclass = SparseCodingLayer_AfterSparse_ArchOMP
+        else:
+            sparseclassfirst = SparseCodingLayer_First_ArchTopK
+            sparseclass = SparseCodingLayer_AfterSparse_ArchTopK
 
         self.num_aux_losses = 4
 
-        self.layer0 = SparseCodingLayer_First_Arch(in_dim=3, out_dim=64, filterset_size=round(int(64*filter_set_mult)), k_div=k_div)
+        self.layer0 = sparseclassfirst(in_dim=3, out_dim=64, filterset_size=round(int(64*filter_set_mult)), k_div=k_div)
         self.layer1 = nn.Sequential(
-            SparseCodingLayer_AfterSparse_Arch(in_dim=64, out_dim=96, filterset_size=round(int(96*filter_set_mult)), k_div=k_div),
+            sparseclass(in_dim=64, out_dim=96, filterset_size=round(int(96*filter_set_mult)), k_div=k_div),
             CustomMaxPool(2))
-        self.layer2 = SparseCodingLayer_AfterSparse_Arch(in_dim=96, out_dim=128, filterset_size=round(int(128*filter_set_mult)), k_div=k_div)
-        self.layer3 = SparseCodingLayer_AfterSparse_Arch(in_dim=128, out_dim=160, filterset_size=round(int(160*filter_set_mult)), k_div=k_div)
+        self.layer2 = sparseclass(in_dim=96, out_dim=128, filterset_size=round(int(128*filter_set_mult)), k_div=k_div)
+        self.layer3 = sparseclass(in_dim=128, out_dim=160, filterset_size=round(int(160*filter_set_mult)), k_div=k_div)
 
 
         self.layers = [self.layer0, self.layer1, self.layer2, self.layer3]
         self.non_aux = [self.layer4, self.layer5]
 
 class Conv6_Sparse01234_Hierarchical(Conv6):
-    def __init__(self, filter_set_mult, k_div, usecase):
+    def __init__(self, filter_set_mult, k_div, usecase, omp):
         super().__init__(usecase)
+        if omp:
+            sparseclassfirst = SparseCodingLayer_First_ArchOMP
+            sparseclass = SparseCodingLayer_AfterSparse_ArchOMP
+        else:
+            sparseclassfirst = SparseCodingLayer_First_ArchTopK
+            sparseclass = SparseCodingLayer_AfterSparse_ArchTopK
 
         self.num_aux_losses = 5
 
-        self.layer0 = SparseCodingLayer_First_Arch(in_dim=3, out_dim=64, filterset_size=round(int(64*filter_set_mult)), k_div=k_div)
+        self.layer0 = sparseclassfirst(in_dim=3, out_dim=64, filterset_size=round(int(64*filter_set_mult)), k_div=k_div)
         self.layer1 = nn.Sequential(
-            SparseCodingLayer_AfterSparse_Arch(in_dim=64, out_dim=96, filterset_size=round(int(96*filter_set_mult)), k_div=k_div),
+            sparseclass(in_dim=64, out_dim=96, filterset_size=round(int(96*filter_set_mult)), k_div=k_div),
             CustomMaxPool(2))
-        self.layer2 = SparseCodingLayer_AfterSparse_Arch(in_dim=96, out_dim=128, filterset_size=round(int(128*filter_set_mult)), k_div=k_div)
-        self.layer3 = SparseCodingLayer_AfterSparse_Arch(in_dim=128, out_dim=160, filterset_size=round(int(160*filter_set_mult)), k_div=k_div)
+        self.layer2 = sparseclass(in_dim=96, out_dim=128, filterset_size=round(int(128*filter_set_mult)), k_div=k_div)
+        self.layer3 = sparseclass(in_dim=128, out_dim=160, filterset_size=round(int(160*filter_set_mult)), k_div=k_div)
         self.layer4 = nn.Sequential(
-            SparseCodingLayer_AfterSparse_Arch(in_dim=160, out_dim=192, filterset_size=round(int(192*filter_set_mult)), k_div=k_div),
+            sparseclass(in_dim=160, out_dim=192, filterset_size=round(int(192*filter_set_mult)), k_div=k_div),
             CustomMaxPool(2))
 
 
@@ -907,21 +1040,27 @@ class Conv6_Sparse01234_Hierarchical(Conv6):
         self.non_aux = [self.layer5]
 
 class Conv6_Sparse012345_Hierarchical(Conv6):
-    def __init__(self, filter_set_mult, k_div, usecase):
+    def __init__(self, filter_set_mult, k_div, usecase, omp):
         super().__init__(usecase)
+        if omp:
+            sparseclassfirst = SparseCodingLayer_First_ArchOMP
+            sparseclass = SparseCodingLayer_AfterSparse_ArchOMP
+        else:
+            sparseclassfirst = SparseCodingLayer_First_ArchTopK
+            sparseclass = SparseCodingLayer_AfterSparse_ArchTopK
 
         self.num_aux_losses = 6
 
-        self.layer0 = SparseCodingLayer_First_Arch(in_dim=3, out_dim=64, filterset_size=round(int(64*filter_set_mult)), k_div=k_div)
+        self.layer0 = sparseclassfirst(in_dim=3, out_dim=64, filterset_size=round(int(64*filter_set_mult)), k_div=k_div)
         self.layer1 = nn.Sequential(
-            SparseCodingLayer_AfterSparse_Arch(in_dim=64, out_dim=96, filterset_size=round(int(96*filter_set_mult)), k_div=k_div),
+            sparseclass(in_dim=64, out_dim=96, filterset_size=round(int(96*filter_set_mult)), k_div=k_div),
             CustomMaxPool(2))
-        self.layer2 = SparseCodingLayer_AfterSparse_Arch(in_dim=96, out_dim=128, filterset_size=round(int(128*filter_set_mult)), k_div=k_div)
-        self.layer3 = SparseCodingLayer_AfterSparse_Arch(in_dim=128, out_dim=160, filterset_size=round(int(160*filter_set_mult)), k_div=k_div)
+        self.layer2 = sparseclass(in_dim=96, out_dim=128, filterset_size=round(int(128*filter_set_mult)), k_div=k_div)
+        self.layer3 = sparseclass(in_dim=128, out_dim=160, filterset_size=round(int(160*filter_set_mult)), k_div=k_div)
         self.layer4 = nn.Sequential(
-            SparseCodingLayer_AfterSparse_Arch(in_dim=160, out_dim=192, filterset_size=round(int(192*filter_set_mult)), k_div=k_div),
+            sparseclass(in_dim=160, out_dim=192, filterset_size=round(int(192*filter_set_mult)), k_div=k_div),
             CustomMaxPool(2))
-        self.layer5 = SparseCodingLayer_AfterSparse_Arch(in_dim=192, out_dim=256, filterset_size=round(int(256*filter_set_mult)), k_div=k_div)
+        self.layer5 = sparseclass(in_dim=192, out_dim=256, filterset_size=round(int(256*filter_set_mult)), k_div=k_div)
 
         self.layers = [self.layer0, self.layer1, self.layer2, self.layer3,
                        self.layer4, self.layer5]
