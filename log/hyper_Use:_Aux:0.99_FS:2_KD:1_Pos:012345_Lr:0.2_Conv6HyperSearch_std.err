@@ -3,22 +3,22 @@ Warning: Traceback of forward call that caused the error:
     "__main__", mod_spec)
   File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/runpy.py", line 85, in _run_code
     exec(code, run_globals)
-  File "/home-nfs/lorell/new_12s/SparseDebugging/src/__main__.py", line 34, in <module>
+  File "/home-nfs/lorell/new_12s/SparseDebugging/src/__main__.py", line 39, in <module>
     main()
-  File "/home-nfs/lorell/new_12s/SparseDebugging/src/__main__.py", line 31, in main
-    run(lr=args.lr, depth=args.depth, augmentation=args.aug, mparams=args.mparams, position=args.position, fsmult=args.fsmult, kdiv=args.kdiv, auxweight=args.auxweight, loadmodel=args.load, usecase=args.usecase, prefix=args.prefix)
-  File "/home-nfs/lorell/new_12s/SparseDebugging/src/app.py", line 137, in run
+  File "/home-nfs/lorell/new_12s/SparseDebugging/src/__main__.py", line 36, in main
+    usecase=args.usecase, prefix=args.prefix, omp=args.omp)
+  File "/home-nfs/lorell/new_12s/SparseDebugging/src/app.py", line 143, in run
     train_fn(EPOCHS, auxweight, model, trainloader, testloader, criterion, optimizer, LRDROPS, LRFACTOR, TAG, usecase, loadmodel=loadmodel)
-  File "/home-nfs/lorell/new_12s/SparseDebugging/src/app.py", line 175, in train_epochs_iterative
+  File "/home-nfs/lorell/new_12s/SparseDebugging/src/app.py", line 181, in train_epochs_iterative
     avg_train_loss, grads, mags = train_epoch_iterative(model, auxweight, trainloader, criterion, optimizer, usecase)
-  File "/home-nfs/lorell/new_12s/SparseDebugging/src/app.py", line 205, in train_epoch_iterative
+  File "/home-nfs/lorell/new_12s/SparseDebugging/src/app.py", line 211, in train_epoch_iterative
     for logits, preds, layer_aux_loss in model(x):
-  File "/home-nfs/lorell/new_12s/SparseDebugging/src/models.py", line 434, in forward
-    x = layer(x)
+  File "/home-nfs/lorell/new_12s/SparseDebugging/src/models.py", line 421, in forward
+    x, layer_aux_loss = layer(x)
   File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/modules/module.py", line 532, in __call__
     result = self.forward(*input, **kwargs)
-  File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/modules/container.py", line 100, in forward
-    input = module(input)
+  File "/home-nfs/lorell/new_12s/SparseDebugging/src/models.py", line 604, in forward
+    aux = self.aux_bn(aux)
   File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/modules/module.py", line 532, in __call__
     result = self.forward(*input, **kwargs)
   File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/modules/batchnorm.py", line 107, in forward
@@ -31,15 +31,15 @@ Traceback (most recent call last):
     "__main__", mod_spec)
   File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/runpy.py", line 85, in _run_code
     exec(code, run_globals)
-  File "/home-nfs/lorell/new_12s/SparseDebugging/src/__main__.py", line 34, in <module>
+  File "/home-nfs/lorell/new_12s/SparseDebugging/src/__main__.py", line 39, in <module>
     main()
-  File "/home-nfs/lorell/new_12s/SparseDebugging/src/__main__.py", line 31, in main
-    run(lr=args.lr, depth=args.depth, augmentation=args.aug, mparams=args.mparams, position=args.position, fsmult=args.fsmult, kdiv=args.kdiv, auxweight=args.auxweight, loadmodel=args.load, usecase=args.usecase, prefix=args.prefix)
-  File "/home-nfs/lorell/new_12s/SparseDebugging/src/app.py", line 137, in run
+  File "/home-nfs/lorell/new_12s/SparseDebugging/src/__main__.py", line 36, in main
+    usecase=args.usecase, prefix=args.prefix, omp=args.omp)
+  File "/home-nfs/lorell/new_12s/SparseDebugging/src/app.py", line 143, in run
     train_fn(EPOCHS, auxweight, model, trainloader, testloader, criterion, optimizer, LRDROPS, LRFACTOR, TAG, usecase, loadmodel=loadmodel)
-  File "/home-nfs/lorell/new_12s/SparseDebugging/src/app.py", line 175, in train_epochs_iterative
+  File "/home-nfs/lorell/new_12s/SparseDebugging/src/app.py", line 181, in train_epochs_iterative
     avg_train_loss, grads, mags = train_epoch_iterative(model, auxweight, trainloader, criterion, optimizer, usecase)
-  File "/home-nfs/lorell/new_12s/SparseDebugging/src/app.py", line 215, in train_epoch_iterative
+  File "/home-nfs/lorell/new_12s/SparseDebugging/src/app.py", line 214, in train_epoch_iterative
     loss.backward(retain_graph=True)
   File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/tensor.py", line 195, in backward
     torch.autograd.backward(self, gradient, retain_graph, create_graph)
