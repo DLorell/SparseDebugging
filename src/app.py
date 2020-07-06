@@ -49,9 +49,7 @@ def run(lr, depth, augmentation, mparams, position, fsmult, kdiv, auxweight, loa
             MODELTYPE = models.Conv12
         else:
             raise Exception("Unknown depth.")
-    else:def __init__(self, in_dim, out_dim, filterset_size, k_div, padding=0, stride=1):
-        super().__init__(in_dim, out_dim, filterset_size, k_div, padding=padding, stride=stride)
-
+    else:
         MODELARGS = [fsmult, kdiv] + MODELARGS
         if depth == 12:
             if position == "0":
