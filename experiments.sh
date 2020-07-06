@@ -61,7 +61,7 @@ fi
 
 # --------------- Resnet Extension --------------------------------------
 
-if false; then
+if true; then
     addition="res_"
 
     PREFIX="12Res"
@@ -69,26 +69,28 @@ if false; then
     DEPTH=12
     AUG="true"
     MPARAMS="true"
-    NUMITER=7
+    NUMITER=1
     CONTINUE="continue"
 
     FSMULT=4
-    AUXWEIGHT=0.7
+    AUXWEIGHT=0.03
 
     for KDIV in 1 2 4; do
-        for POSITION in "0_Res" "01_Res" "012_Res" "0123_Res" "01234_Res" "012345_Res"; do
-            for USECASE in "supervise" "random" "pretrain" "regularize"; do
+        POSITION="012345_Res"
+        #for POSITION in "0_Res" "01_Res" "012_Res" "0123_Res" "01234_Res" "012345_Res"; do
+            USECASE="supervise"
+            #for USECASE in "supervise" "random" "pretrain" "regularize"; do
                 TAG="${addition}Use:${USECASE}_Aux:${AUXWEIGHT}_FS:${FSMULT}_KD:${KDIV}_Pos:${POSITION}_Conv12Res";
                 ./submission_script.sh mmaire-gpu "${TAG}Series" "11g" "log/${TAG}_std.out" "log/${TAG}_std.err" 1 ${NUMITER} "${CONTINUE}" ${DEPTH} "${AUG}" "${MPARAMS}" "${POSITION}" ${FSMULT} ${KDIV} "${AUXWEIGHT}" "${USECASE}" "${PREFIX}";
-            done
-        done
+            #done
+        #done
     done
 fi
 
 
 #  --------------- Primary / Aux loss weighting search ------------------
 
-if true; then
+if false; then
 
     addition="hyper_"
 
