@@ -17,8 +17,8 @@ Warning: Traceback of forward call that caused the error:
     x, layer_aux_loss = layer(x)
   File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/modules/module.py", line 532, in __call__
     result = self.forward(*input, **kwargs)
-  File "/home-nfs/lorell/new_12s/SparseDebugging/src/models.py", line 604, in forward
-    aux = self.aux_bn(aux)
+  File "/home-nfs/lorell/new_12s/SparseDebugging/src/models.py", line 595, in forward
+    x = self.bn(x)
   File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/modules/module.py", line 532, in __call__
     result = self.forward(*input, **kwargs)
   File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/nn/modules/batchnorm.py", line 107, in forward
@@ -39,7 +39,7 @@ Traceback (most recent call last):
     train_fn(EPOCHS, auxweight, model, trainloader, testloader, criterion, optimizer, LRDROPS, LRFACTOR, TAG, usecase, loadmodel=loadmodel)
   File "/home-nfs/lorell/new_12s/SparseDebugging/src/app.py", line 181, in train_epochs_iterative
     avg_train_loss, grads, mags = train_epoch_iterative(model, auxweight, trainloader, criterion, optimizer, usecase)
-  File "/home-nfs/lorell/new_12s/SparseDebugging/src/app.py", line 214, in train_epoch_iterative
+  File "/home-nfs/lorell/new_12s/SparseDebugging/src/app.py", line 221, in train_epoch_iterative
     loss.backward(retain_graph=True)
   File "/home-nfs/lorell/miniconda3/envs/baby/lib/python3.7/site-packages/torch/tensor.py", line 195, in backward
     torch.autograd.backward(self, gradient, retain_graph, create_graph)
