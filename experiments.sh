@@ -61,7 +61,7 @@ fi
 
 # --------------- Resnet Extension --------------------------------------
 
-if true; then
+if false; then
     addition="res_"
 
     PREFIX="12Res"
@@ -82,8 +82,8 @@ if true; then
         #for POSITION in "0_Res" "01_Res" "012_Res" "0123_Res" "01234_Res" "012345_Res"; do
             USECASE="supervise"
             #for USECASE in "supervise" "random" "pretrain" "regularize"; do
-                TAG="${addition}Use:${USECASE}_Aux:${AUXWEIGHT}_FS:${FSMULT}_KD:${KDIV}_Pos:${POSITION}_Conv12Res";
-                ./submission_script.sh mmaire-gpu "${TAG}Series" "11g" "log/${TAG}_std.out" "log/${TAG}_std.err" 1 ${NUMITER} "${CONTINUE}" ${DEPTH} "${AUG}" "${MPARAMS}" "${POSITION}" ${FSMULT} ${KDIV} "${AUXWEIGHT}" "${USECASE}" "${PREFIX}" ${LR};
+                TAG="${addition}Use:${USECASE}_Aux:${AUXWEIGHT}_FS:${FSMULT}_KD:${KDIV}_Pos:${POSITION}_Lr:${LR}_Conv6HyperSearch";
+                ./submission_script.sh mmaire-gpu "${TAG}Series" "" "log/${TAG}_std.out" "log/${TAG}_std.err" 1 ${NUMITER} "${CONTINUE}" ${DEPTH} "${AUG}" "${MPARAMS}" "${POSITION}" ${FSMULT} ${KDIV} "${AUXWEIGHT}" "${USECASE}" "${PREFIX}" ${LR};
             #done
         #done
     done
@@ -92,7 +92,7 @@ fi
 
 #  --------------- Primary / Aux loss weighting search ------------------
 
-if false; then
+if true; then
 
     addition="hyper_"
 
@@ -106,16 +106,39 @@ if false; then
     CONTINUE="continue"
 
 
+
+    USECASE="regularize"
     for FSMULT in 2 4; do
         POSITION="012345"
-        #for POSITION in "First" "012" "012345"; do
-            for AUXWEIGHT in 0.01 0.99; do
+        for AUXWEIGHT in 0.01 0.99; do
+            for LR in 0.2 0.1 0.03 0.01 0.005; do
+                TAG="${addition}Use:${USECASE}_Aux:${AUXWEIGHT}_FS:${FSMULT}_KD:${KDIV}_Pos:${POSITION}_Lr:${LR}_Conv6HyperSearch";
+                ./submission_script.sh mmaire-gpu "${TAG}Series" "" "log/${TAG}_std.out" "log/${TAG}_std.err" 1 ${NUMITER} "${CONTINUE}" ${DEPTH} "${AUG}" "${MPARAMS}" "${POSITION}" ${FSMULT} ${KDIV} "${AUXWEIGHT}" "${USECASE}" "${PREFIX}" ${LR};
+            done
+        done
+    done
+
+    AUXWEIGHT=-666
+    for FSMULT in 2 4; do
+        POSITION="012345"
+        for USECASE in "supervise" "pretrain" "random"; do
+            for LR in 0.2 0.1 0.03 0.01 0.005; do
+                TAG="${addition}Use:${USECASE}_Aux:${AUXWEIGHT}_FS:${FSMULT}_KD:${KDIV}_Pos:${POSITION}_Lr:${LR}_Conv6HyperSearch";
+                ./submission_script.sh mmaire-gpu "${TAG}Series" "" "log/${TAG}_std.out" "log/${TAG}_std.err" 1 ${NUMITER} "${CONTINUE}" ${DEPTH} "${AUG}" "${MPARAMS}" "${POSITION}" ${FSMULT} ${KDIV} "${AUXWEIGHT}" "${USECASE}" "${PREFIX}" ${LR};
+            done
+        done
+    done
+
+    USECASE="regularize"
+    for FSMULT in 2 4; do
+        for POSITION in "First" "012" "012345"; do
+            for AUXWEIGHT in 0.1 0.3 0.5 0.7 0.9; do
                 for LR in 0.2 0.1 0.03 0.01 0.005; do
                     TAG="${addition}Use:${USECASE}_Aux:${AUXWEIGHT}_FS:${FSMULT}_KD:${KDIV}_Pos:${POSITION}_Lr:${LR}_Conv6HyperSearch";
                     ./submission_script.sh mmaire-gpu "${TAG}Series" "" "log/${TAG}_std.out" "log/${TAG}_std.err" 1 ${NUMITER} "${CONTINUE}" ${DEPTH} "${AUG}" "${MPARAMS}" "${POSITION}" ${FSMULT} ${KDIV} "${AUXWEIGHT}" "${USECASE}" "${PREFIX}" ${LR};
                 done
             done
-        #done
+        done
     done
 
 fi
@@ -149,8 +172,3 @@ if false; then
         #done
     #done
 fi
- 
-
-
-
-
