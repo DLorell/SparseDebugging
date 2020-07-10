@@ -92,7 +92,7 @@ fi
 
 #  --------------- Primary / Aux loss weighting search ------------------
 
-if false; then
+if true; then
 
     addition="hyper_"
 
