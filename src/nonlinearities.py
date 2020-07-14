@@ -1,6 +1,6 @@
 import torch.autograd
 import src.functional as f
-from pytorch_memlab import LineProfiler
+#from pytorch_memlab import LineProfiler
 
 
 class BatchOMP(torch.autograd.Function):
@@ -18,12 +18,12 @@ class BatchOMP(torch.autograd.Function):
 
             if k == 32:
                 print("I'm in!")
-                with LineProfiler(f.batch_omp, f.omp_lines_12_thru_13) as prof:
-                    print('Doing it.')
-                    out = f.batch_omp(activations, D, k)
-                    torch.cuda.empty_cache()
-                print("Displaying...")
-                print(prof.display())
+                #with LineProfiler(f.batch_omp, f.omp_lines_12_thru_13) as prof:
+                #    print('Doing it.')
+                #    out = f.batch_omp(activations, D, k)
+                #    torch.cuda.empty_cache()
+                #print("Displaying...")
+                #print(prof.display())
             else:
                 print("Doing it for k=", k)
                 out = f.batch_omp(activations, D, k)
