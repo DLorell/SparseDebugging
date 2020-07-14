@@ -4,6 +4,37 @@ addition=""
 
 
 
+
+# --------------- Hierarchical TopK -----------------
+
+if true; then
+    addition="topk_"
+
+    PREFIX="ArchTopK"
+
+    DEPTH=6
+    AUG="true"
+    MPARAMS="true"
+    NUMITER=1
+    CONTINUE="continue"
+
+    FSMULT=4
+    AUXWEIGHT=0.3
+    LR=0.03
+
+
+    for KDIV in 4 8; do
+        for POSITION in "First_Hierarchical" "012_Hierarchical" "012345_Hierarchical"; do
+            for USECASE in "supervise" "random" "pretrain" "regularize"; do
+                TAG="${addition}Use:${USECASE}_Aux:${AUXWEIGHT}_FS:${FSMULT}_K:${KDIV}_Pos:${POSITION}_Conv6_Sparse";
+                ./submission_script.sh mmaire-gpu "${TAG}Series" "" "log/${TAG}_std.out" "log/${TAG}_std.err" 1 ${NUMITER} "${CONTINUE}" ${DEPTH} "${AUG}" "${MPARAMS}" "${POSITION}" ${FSMULT} ${KDIV} "${AUXWEIGHT}" "${USECASE}" "${PREFIX}";
+            done
+        done
+    done
+fi
+
+
+
 # --------------- Hierarchical Sparse Layer Insertion -----------------
 
 if false; then
@@ -61,7 +92,7 @@ fi
 
 # --------------- Resnet Extension --------------------------------------
 
-if true; then
+if false; then
     addition="res_"
 
     PREFIX="12Res"

@@ -124,10 +124,19 @@ def run(lr, depth, augmentation, mparams, position, fsmult, kdiv, auxweight, loa
                     MODELTYPE = models.Conv6_Sparse012345_Hierarchical
                 else:
                     raise Exception("Unknown Hierarchical Position")
+                
+                if not omp:
+                    position += "TopK"
+                else:
+                    position += "OMP"
+
             else:
                 raise Exception("Unknown position.")
             
-        TAG += "_"+position + "_[FS:{}, KD:{}, AuxWgt:{}, lr:{}]_UseCase:{}".format(fsmult, kdiv, auxweight, LR, usecase)
+        if "Hierarchical" in position:
+            TAG += "_"+position + "_[FS:{}, K:{}, AuxWgt:{}, lr:{}]_UseCase:{}".format(fsmult, kdiv, auxweight, LR, usecase)
+        else:
+            TAG += "_"+position + "_[FS:{}, KD:{}, AuxWgt:{}, lr:{}]_UseCase:{}".format(fsmult, kdiv, auxweight, LR, usecase)
 
     if not mparams:
         TAG += "_oldParams"
