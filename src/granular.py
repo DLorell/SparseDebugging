@@ -3,6 +3,7 @@ import torch.nn as nn
 import numpy as np
 import src.functional as f
 import src.nonlinearities
+from time import sleep
 
 
 
@@ -28,15 +29,22 @@ class HierarchicalRingTopK(nn.Module):
         all_activations = self.dict(x)
         descending_mask = None
         masked_activations = None
+
         for i, (atomic_activations, atoms) in enumerate(zip(self.activation_splitter(all_activations), self.atomic_splitter())):
             k = self.ks[i]
             if descending_mask is not None: atomic_activations = self.gate(i-1, atomic_activations, descending_mask)
-            selected_activations = self.selector(atomic_activations, atoms.view(atoms.shape[0], -1).T, k)
+            try:
+                selected_activations = self.selector(atomic_activations, atoms.view(atoms.shape[0], -1).T, k)
+            except:
+                selected_activations = self.selector.apply(atomic_activations, atoms.view(atoms.shape[0], -1).T, k)
             descending_mask = (selected_activations != 0).float()
             if masked_activations is None:
                 masked_activations = selected_activations
             else:
-                masked_activations = torch.cat([masked_activations, selected_activations], dim=1) 
+                masked_activations = torch.cat([masked_activations, selected_activations], dim=1)
+            
+            selected_activations = None
+
         return masked_activations
 
     def gate(self, level, activations, descending_mask):

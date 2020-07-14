@@ -1,3 +1,3 @@
 {
-    "python.pythonPath": "/home/controller/miniconda3/envs/sparsecoding/bin/python"
+    "python.pythonPath": "/home/controller/anaconda3/envs/sparsecoding/bin/python"
 }

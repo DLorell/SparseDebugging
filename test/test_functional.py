@@ -21,6 +21,9 @@ def save_torch_image(x, filename):
 
 
 def test_batch_omp_nograd():
+
+    torch.manual_seed(0)
+
     with torch.no_grad():
         _, testloader = f.get_dataloaders(augment=False, batch_size=128)
         for batch in testloader:
@@ -28,12 +31,12 @@ def test_batch_omp_nograd():
             inputs = inputs[5:50].to(DEVICE)
             break
 
-        conv = nn.Conv2d(3, 256, kernel_size=3, bias=False).to(DEVICE)
+        conv = nn.Conv2d(3, 64, kernel_size=3, bias=False).to(DEVICE)
         f.orthonormalize_init(conv)
         D = conv.weight.view(conv.weight.shape[0], -1).T
-        k = 8
+        k = 32
         activations = conv(inputs)
-        activations = f.batch_omp(activations, D, k)
+        activations = f.batch_omp(activations, D, k, inputs)
 
         avg_sparsity = torch.mean(torch.sum((activations != 0).float(), dim=1))
         check.is_true(torch.abs(avg_sparsity - k) <= 4)
@@ -54,6 +57,8 @@ def test_batch_omp_nograd():
         final = torch.cat([cattted_recon_avg, catted_input, cattted_recon_piecewise], dim=-1)
 
         save_torch_image(final, "out.png")
+
+        exit(0)
 
 
 def build_reconstruction(x, kernel_size, ch_depth=3, avg=False):

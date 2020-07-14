@@ -6,6 +6,7 @@ import os
 import numpy as np
 from src.granular import HierarchicalRingTopK, HierarchicalRingOMP
 from time import sleep
+import torch.multiprocessing as mp
 
 
 DEVICE = "cuda"
@@ -28,7 +29,8 @@ def run(lr, depth, augmentation, mparams, position, fsmult, kdiv, auxweight, loa
 
 
     torch.autograd.set_detect_anomaly(True)
-    #torch.manual_seed(0)
+    mp.set_start_method('spawn')
+    torch.manual_seed(1)
 
     EPOCHS = 200 if mparams else 360
     BATCH = 128 if mparams else 256
@@ -37,6 +39,9 @@ def run(lr, depth, augmentation, mparams, position, fsmult, kdiv, auxweight, loa
     LRFACTOR = 5 if mparams else 10
     LRDROPS = [60, 120, 160] if mparams else [120, 240]
     LR = lr if lr != -99 else 0.1
+    
+    #BATCH = BATCH//4
+    #LR = LR/4
 
     MODELARGS = [usecase]
 
@@ -215,6 +220,11 @@ def train_epoch_iterative(model, auxweight, dataloader, criterion, optimizer, us
                 layer_aux_loss = None
                 loss = None
             elif layer_aux_loss is None and logits is not None and preds is not None:
+
+
+                #print("Aux: ", torch.norm(model.layer0.encoder.weight.grad.view(256, -1), p='fro', dim=1).mean())
+
+
                 acc = torch.sum((preds == targets).float()) / preds.numel()
                 classification_loss = criterion(logits, targets)
                 loss = (1-auxweight)*classification_loss if usecase == "regularize" else classification_loss
@@ -222,8 +232,12 @@ def train_epoch_iterative(model, auxweight, dataloader, criterion, optimizer, us
                 accs.append(acc.item())
                 layer_aux_loss = None
                 loss = None
+
+                #print("With supervised: ", torch.norm(model.layer0.encoder.weight.grad.view(256, -1), p='fro', dim=1).mean())
+                #exit(0)
+
             elif layer_aux_loss is None and logits is None and preds is None:
-                    pass
+                pass
             else:
                 raise Exception("Invalid combination of model outputs.")
         # ---------------------------------------------------------------------------------------------------------------
