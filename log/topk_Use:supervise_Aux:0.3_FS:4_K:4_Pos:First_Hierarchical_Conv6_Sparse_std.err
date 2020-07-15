@@ -1,5 +1,0 @@
-usage: __main__.py [-h] [-depth DEPTH] [-aug AUG] [-mparams MPARAMS]
-                   [-position POSITION] [-fsmult FSMULT] [-kdiv KDIV]
-                   [-auxweight AUXWEIGHT] [-load LOAD] [-usecase USECASE]
-                   [-prefix PREFIX] [-lr LR] [-omp OMP]
-__main__.py: error: argument -lr: invalid float value: ''
