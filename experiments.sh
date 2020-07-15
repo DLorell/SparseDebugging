@@ -15,7 +15,7 @@ if true; then
     DEPTH=6
     AUG="true"
     MPARAMS="true"
-    NUMITER=1
+    NUMITER=2
     CONTINUE="continue"
 
     FSMULT=4
@@ -92,7 +92,7 @@ fi
 
 # --------------- Resnet Extension --------------------------------------
 
-if false; then
+if true; then
     addition="res_"
 
     PREFIX="12Res"
@@ -100,7 +100,7 @@ if false; then
     DEPTH=12
     AUG="true"
     MPARAMS="true"
-    NUMITER=5
+    NUMITER=3
     CONTINUE="continue"
 
     FSMULT=4
